@@ -1,0 +1,30 @@
+html {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#g2048 {
+    background-color: black;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+h1  {
+    color: green;
+    text-align: center;
+}
+
+.cell {
+    background-color: grey;
+    height: 80px;
+    width: 80px;
+    border-radius: 5px;
+}
+
+.tile {
+    color: aquamarine;
+    text-align: center;
+    font-family: Helvetica, sans-serif;
+    font-size: large;
+}
