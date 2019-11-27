@@ -26,8 +26,8 @@ class Board {
 
     }
 
-    insertTile(tile, pos) {
-        let [x, y] = pos
+    insertTile(tile) {
+        let [x, y] = tile.pos;
         this.grid[x][y].insert(tile);
     }
 

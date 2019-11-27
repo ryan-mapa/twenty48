@@ -3,6 +3,13 @@ import Board from './board';
 
 const DIMENSIONS = 4; // 4x4
 
+const DIRS = {
+    'left': [-1,0],
+    'right': [1,0],
+    'up': [0,1],
+    'down': [0,-1]
+}
+
 const myDebounce = function(cb, interval) {
     let flag = true;
     return (...callArgs) => {
@@ -23,23 +30,23 @@ class Game {
         this.addEventListeners();
         this.newGame();
 
-        this.debouncedHandleKey = myDebounce(this.handleKeyPress, 2000);
+        this.debouncedHandleKey = myDebounce(this.handleKeyPress, 1000);
+        window.inBounds = this.inBounds;
     }
-    
     
     addEventListeners() {
         document.addEventListener('keydown', e => {
             if (e.keyCode == 37) {
-                this.debouncedHandleKey('left')
+                this.debouncedHandleKey('left');
             }
             if (e.keyCode == 38) {
-                this.handleKeyPress('up');
+                this.debouncedHandleKey('up');
             }
             if (e.keyCode == 39) {
-                this.handleKeyPress('right');
+                this.debouncedHandleKey('right');
             }
             if (e.keyCode == 40) {
-                this.handleKeyPress('down');
+                this.debouncedHandleKey('down');
             }
         })
     }
@@ -49,7 +56,20 @@ class Game {
         console.log(key);
     }
 
-    move() {
+    move(dir) {
+        let diff = DIRS[dir];
+        
+    }
+
+    inBounds(pos) {
+        let [x, y] = pos;
+        if (x >= DIMENSIONS || x < 0 || y > DIMENSIONS || y < 0) return false;
+        return true;
+    }
+
+    checkDirs(tile, dir) {
+        let [dx, dy] = dir;
+        let currentPos = tile.pos;
 
     }
 
@@ -58,10 +78,10 @@ class Game {
     }
 
     newGame() {
-        let tile1 = new Tile(2048);
-        let tile2 = new Tile(2);
-        this.board.insertTile(tile1, this.randomEmptyPos());
-        this.board.insertTile(tile2, this.randomEmptyPos());
+        let tile1 = new Tile(2048, this.randomEmptyPos());
+        this.board.insertTile(tile1);
+        let tile2 = new Tile(2, this.randomEmptyPos());
+        this.board.insertTile(tile2);
     }
 
     randomEmptyPos() {
