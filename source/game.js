@@ -4,10 +4,10 @@ import Board from './board';
 const DIMENSIONS = 4; // 4x4
 
 const DIRS = {
-    'left': [-1,0],
-    'right': [1,0],
-    'up': [0,1],
-    'down': [0,-1]
+    'left': [0,-1],
+    'right': [0,1],
+    'up': [-1,0],
+    'down': [1,0]
 }
 
 const myDebounce = function(cb, interval) {
@@ -16,7 +16,7 @@ const myDebounce = function(cb, interval) {
         if (flag) {
             flag = false;
             cb(...callArgs);
-            setTimeout(() => flag = true, interval);
+            setTimeout(() => (flag = true), interval);
         }
     }
 }
@@ -30,8 +30,8 @@ class Game {
         this.addEventListeners();
         this.newGame();
 
-        this.debouncedHandleKey = myDebounce(this.handleKeyPress, 1000);
-        window.inBounds = this.inBounds;
+        this.handleKeyPress = this.handleKeyPress.bind(this);
+        this.debouncedHandleKey = myDebounce(this.handleKeyPress, 500);
     }
     
     addEventListeners() {
@@ -52,25 +52,48 @@ class Game {
     }
     
 
-    handleKeyPress(key) { 
-        console.log(key);
+    handleKeyPress(direction) { 
+        console.log(direction);
+        let diff = DIRS[direction];
+        let nextMove = this.findMovePos(this.tile.pos, diff); // test tile
+        this.move(this.tile, nextMove);
     }
 
-    move(dir) {
-        let diff = DIRS[dir];
-        
+    findMovePos(currentPos, diff, first = true) {
+        let next = this.nextPos(currentPos, diff)
+
+        if (this.nextSpotMovable(currentPos, diff)) {
+            return this.findMovePos(next, diff, false);
+        } else {
+            // console.log('final: ', currentPos);
+            return currentPos;
+        }
+    }
+
+    move(tile, pos) {    
+        this.board.index(pos).insertTile(tile);
+        tile.pos = pos;
     }
 
     inBounds(pos) {
         let [x, y] = pos;
-        if (x >= DIMENSIONS || x < 0 || y > DIMENSIONS || y < 0) return false;
+        if (x >= DIMENSIONS || x < 0 || y >= DIMENSIONS || y < 0) return false;
         return true;
     }
 
-    checkDirs(tile, dir) {
-        let [dx, dy] = dir;
-        let currentPos = tile.pos;
+    nextPos(curr, diff) {
+        return [curr[0] + diff[0], curr[1] + diff[1]];
+    }
 
+    nextSpotMovable(currentPos, dir) {
+        let next = this.nextPos(currentPos, dir);
+        // console.log(next)
+        if (this.inBounds(next)) {
+            // return this.board.index(next).isEmpty() ? true : false
+            return true;
+        } else {
+            return false;
+        }
     }
 
     createBoard() {
@@ -78,10 +101,13 @@ class Game {
     }
 
     newGame() {
-        let tile1 = new Tile(2048, this.randomEmptyPos());
-        this.board.insertTile(tile1);
-        let tile2 = new Tile(2, this.randomEmptyPos());
-        this.board.insertTile(tile2);
+        this.tile = new Tile(2048, this.randomEmptyPos());
+        window.tile = this.tile;
+        this.board.insertTile(this.tile);
+        // let tile1 = new Tile(2048, this.randomEmptyPos());
+        // this.board.insertTile(tile1);
+        // let tile2 = new Tile(2, this.randomEmptyPos());
+        // this.board.insertTile(tile2);
     }
 
     randomEmptyPos() {

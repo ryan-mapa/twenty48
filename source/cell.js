@@ -6,7 +6,11 @@ class Cell {
         this.el = el;
     }
 
-    insert(tile) {
+    pos() {
+        return JSON.parse(this.el.getAttribute("data-pos"));
+    }
+
+    insertTile(tile) {
         this.el.appendChild(tile.el)
     }
     
@@ -15,7 +19,7 @@ class Cell {
         return true;
     }
 
-    
+
 }
 
 export default Cell;

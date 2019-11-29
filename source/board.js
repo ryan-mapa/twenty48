@@ -22,13 +22,18 @@ class Board {
         this.el = el;
     }
 
+    index(pos) {
+        let [x,y] = pos;
+        return this.grid[x][y];
+    }
+
     build() {
 
     }
 
     insertTile(tile) {
         let [x, y] = tile.pos;
-        this.grid[x][y].insert(tile);
+        this.grid[x][y].insertTile(tile);
     }
 
 }
