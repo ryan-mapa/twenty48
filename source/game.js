@@ -58,8 +58,8 @@ class Game {
         })
 
         // mobile swiping code
-        document.addEventListener('touchstart', handleTouchStart, false);
-        document.addEventListener('touchmove', handleTouchMove, false);
+        this.el.addEventListener('touchstart', handleTouchStart, false);
+        this.el.addEventListener('touchmove', handleTouchMove, false);
 
         let xDown = null;
         let yDown = null;
