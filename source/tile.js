@@ -15,6 +15,15 @@ class Tile {
         return false;
     }
 
+    absorb(tile) { // self must be absorbed into tile        
+        // this.val = parseInt(tile.val) + parseInt(this.val);
+        // this.el.innerHTML = this.val;
+        this.val = parseInt(tile.val) + parseInt(this.val);
+        this.el.innerHTML = this.val; // not taking?!
+
+        tile.el.parentElement.removeChild(tile.el);
+    }
+
 
 }
 

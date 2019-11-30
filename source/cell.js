@@ -11,8 +11,11 @@ class Cell {
         return JSON.parse(this.el.getAttribute("data-pos"));
     }
 
-    insertTile(tile) {
-        this.el.appendChild(tile.el)
+    insertTile(tile, prevCell) {
+        if (this.tile) tile.absorb(this.tile);
+        
+        if (prevCell) prevCell.removeTile(tile);
+        this.el.appendChild(tile.el);
         this.tile = tile;
     }
 

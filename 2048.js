@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     for (let cell of cells) {
         cell.addEventListener('click', () => {
-            console.log(cell.id)
+
         })
     }
 
