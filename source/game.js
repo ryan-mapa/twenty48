@@ -89,18 +89,18 @@ class Game {
             if (Math.abs(xDiff) > Math.abs(yDiff)) {/*most significant*/
                 if (xDiff > 0) {
                     /* left swipe */
-                    alert('left!')
+                    this.debouncedHandleKey('left');
                 } else {
                     /* right swipe */
-                    alert('right!')
+                    this.debouncedHandleKey('right');
                 }
             } else {
                 if (yDiff > 0) {
                     /* up swipe */
-                    alert('up!')
+                    this.debouncedHandleKey('up');
                 } else {
                     /* down swipe */
-                    alert('down!')
+                    this.debouncedHandleKey('down');
                 }
             }
             /* reset values */
