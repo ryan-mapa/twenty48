@@ -58,19 +58,15 @@ class Game {
         })
     }
     
-
     handleKeyPress(direction) { 
-        this.checkLose();
         this.executeMoves(direction);
         this.addRandomTile();
     }
 
-    checkLose() {
+    isBoardFull() {
         let coords = this.buildMoveCoordForDir('up');
         let occupied = coords.filter(pos => !this.board.index(pos).isEmpty())
-        console.log(occupied);
-        
-        // return occupied
+        return occupied.length === DIMENSIONS*DIMENSIONS ? true : false;
     }
 
     findMovePos(currentPos, diff, initial) {
@@ -89,10 +85,14 @@ class Game {
     }
 
     move(tile, pos) {    
-        // this.board.index(tile.pos).removeTile(tile);
         let prevCell = this.board.index(tile.pos);
         this.board.index(pos).insertTile(tile, prevCell);
         tile.pos = pos;
+    }
+
+    fourOrTwo() {
+        if (Math.random() > 0.15) return 2;
+        return 4;
     }
 
     inBounds(pos) {
@@ -110,16 +110,20 @@ class Game {
     }
 
     newGame() {
-        let tile1 = new Tile(4, this.randomEmptyPos());
+        let tile1 = new Tile(this.fourOrTwo(), this.randomEmptyPos());
         this.board.insertTile(tile1);
-        let tile2 = new Tile(2, this.randomEmptyPos());
+        let tile2 = new Tile(this.fourOrTwo(), this.randomEmptyPos());
         this.board.insertTile(tile2);
-        let tile3 = new Tile(2, this.randomEmptyPos());
-        this.board.insertTile(tile3);
     }
 
     addRandomTile() {
-        let tile = new Tile(2, this.randomEmptyPos());
+        if (this.isBoardFull()) {
+            // this.checkGameOver();
+            console.log("tooo fulll");
+            
+            return;
+        }
+        let tile = new Tile(this.fourOrTwo(), this.randomEmptyPos());
         this.board.insertTile(tile);
     }
 
