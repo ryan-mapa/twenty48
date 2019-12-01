@@ -73,6 +73,7 @@ class Game {
         
         function handleTouchMove(debouncedHandleKey) {
             return e => {
+                e.preventDefault();
                 if (!xDown || !yDown) return;
 
                 let xUp = e.touches[0].clientX;
