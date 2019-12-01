@@ -58,57 +58,52 @@ class Game {
         })
 
         // mobile swiping code
-        this.el.addEventListener('touchstart', handleTouchStart, false);
-        this.el.addEventListener('touchmove', handleTouchMove, false);
-
         let xDown = null;
         let yDown = null;
 
-        function getTouches(evt) {
-            return evt.touches ||             // browser API
-                evt.originalEvent.touches; // jQuery
-        }
+        this.el.addEventListener('touchstart', this.handleTouchStart(xDown, yDown), false);
+        this.el.addEventListener('touchmove', this.handleTouchMove(xDown, yDown), false);
 
-        function handleTouchStart(evt) {
-            const firstTouch = getTouches(evt)[0];
-            xDown = firstTouch.clientX;
-            yDown = firstTouch.clientY;
-        };
-
-        function handleTouchMove(evt) {
-            if (!xDown || !yDown) {
-                return;
-            }
-
+        // function getTouches(evt) {
+        //     return evt.touches ||             // browser API
+        //         evt.originalEvent.touches; // jQuery
+        // }        
+    }
+    
+    handleTouchMove(xDown, yDown) {
+        return e => {
+            if (!xDown || !yDown) return;
+    
             let xUp = evt.touches[0].clientX;
             let yUp = evt.touches[0].clientY;
-
             let xDiff = xDown - xUp;
             let yDiff = yDown - yUp;
-
+    
             if (Math.abs(xDiff) > Math.abs(yDiff)) {/*most significant*/
                 if (xDiff > 0) {
-                    /* left swipe */
                     this.debouncedHandleKey('left');
                 } else {
-                    /* right swipe */
                     this.debouncedHandleKey('right');
                 }
             } else {
                 if (yDiff > 0) {
-                    /* up swipe */
                     this.debouncedHandleKey('up');
                 } else {
-                    /* down swipe */
                     this.debouncedHandleKey('down');
                 }
             }
-            /* reset values */
             xDown = null;
             yDown = null;
-        };
+        }
+    }
 
-
+    handleTouchStart(e, xDown, yDown) {
+        return (e) => {
+            const firstTouch = e.touches[0];
+            // const firstTouch = getTouches(evt)[0];
+            xDown = firstTouch.clientX;
+            yDown = firstTouch.clientY; // set x,y
+        }
     }
     
     handleKeyPress(direction) { 
