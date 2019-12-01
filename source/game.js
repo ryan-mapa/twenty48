@@ -39,6 +39,7 @@ class Game {
         this.createBoard();
         this.addEventListeners();
         this.newGame();
+        // this.endGame(); // for testing!
 
     }
     
@@ -100,17 +101,29 @@ class Game {
         }
     }
 
-
     
     handleKeyPress(direction) { 
-        this.executeMoves(direction);
-        this.addRandomTile();
+        if (this.executeMoves(direction)) {
+            this.addRandomTile();
+        }
+        if (this.isBoardFull()) {
+            console.log("tooo fulll");
+            this.checkGameOver();
+        }
     }
 
     isBoardFull() {
         let coords = this.buildMoveCoordForDir('up');
         let occupied = coords.filter(pos => !this.board.index(pos).isEmpty())
         return occupied.length === DIMENSIONS*DIMENSIONS ? true : false;
+    }
+
+    gameOver() {
+        alert('GAME OVER!');
+    }
+
+    youWin() {
+        alert('you did it!');
     }
 
     findMovePos(currentPos, diff, initial) {
@@ -160,13 +173,13 @@ class Game {
         this.board.insertTile(tile2);
     }
 
-    addRandomTile() {
-        if (this.isBoardFull()) {
-            // this.checkGameOver();
-            console.log("tooo fulll");
-            
-            return;
+    endGame() {
+        for (let i = 0; i < 15; i++) {
+            this.board.insertTile(new Tile(i, this.randomEmptyPos()))
         }
+    }
+
+    addRandomTile() {
         let tile = new Tile(this.fourOrTwo(), this.randomEmptyPos());
         this.board.insertTile(tile);
     }
@@ -181,12 +194,40 @@ class Game {
         let moves = this.buildMoveCoordForDir(dir);
         let diff = DIRS[dir];
         
+        let possibleMoves = 0
         for (let coord of moves) {            
             if (this.board.index(coord).isEmpty()) continue;
             let tile = this.board.index(coord).tile;
             let next = this.findMovePos(coord, diff, coord);
-            if (next != coord) this.move(tile, next);
+            if (next != coord) {
+                possibleMoves = possibleMoves + 1;
+                this.move(tile, next);
+            }
         }
+        return possibleMoves > 0 ? true : false;
+    }
+
+    testPossibleMove(dir) {
+        let moves = this.buildMoveCoordForDir(dir);
+        let diff = DIRS[dir];
+        
+        let possibleMoves = 0
+        for (let coord of moves) {            
+            if (this.board.index(coord).isEmpty()) continue;
+            let tile = this.board.index(coord).tile;
+            let next = this.findMovePos(coord, diff, coord);
+            if (next != coord) possibleMoves = possibleMoves + 1;
+        }
+        return possibleMoves > 0 ? true : false;
+    }
+
+    checkGameOver() {
+        let dirs  = Object.keys(DIRS);
+        let stillAlive = 0;
+        for (let dir of dirs) {
+            if (this.testPossibleMove(dir)) stillAlive;
+        }
+        if (stillAlive === 0) this.gameOver();
     }
 
     buildMoveCoordForDir(dir) {
