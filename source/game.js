@@ -38,8 +38,8 @@ class Game {
     
         this.createBoard();
         this.addEventListeners();
-        // this.newGame();
-        this.endGame(); // for testing!
+        this.newGame();
+        // this.endGame(); // for testing!
 
     }
     
