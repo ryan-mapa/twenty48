@@ -38,8 +38,8 @@ class Game {
     
         this.createBoard();
         this.addEventListeners();
-        this.newGame();
-        // this.endGame(); // for testing!
+        // this.newGame();
+        this.endGame(); // for testing!
 
     }
     
@@ -119,7 +119,7 @@ class Game {
     }
 
     gameOver() {
-        alert('GAME OVER!');
+        window.setTimeout(() => alert('GAME OVER!'), 100);
     }
 
     youWin() {
@@ -175,7 +175,7 @@ class Game {
 
     endGame() {
         for (let i = 0; i < 15; i++) {
-            this.board.insertTile(new Tile(i, this.randomEmptyPos()))
+            this.board.insertTile(new Tile(2, this.randomEmptyPos()))
         }
     }
 
@@ -225,8 +225,9 @@ class Game {
         let dirs  = Object.keys(DIRS);
         let stillAlive = 0;
         for (let dir of dirs) {
-            if (this.testPossibleMove(dir)) stillAlive;
+            if (this.testPossibleMove(dir)) stillAlive++;
         }
+        console.log(stillAlive);
         if (stillAlive === 0) this.gameOver();
     }
 
