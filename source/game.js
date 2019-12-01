@@ -32,18 +32,19 @@ class Game {
     constructor(el, board = new Board(DIMENSIONS)) {
         this.el = el;
         this.board = board;
+
+        this.handleKeyPress = this.handleKeyPress.bind(this);
+        this.debouncedHandleKey = myDebounce(this.handleKeyPress, 250);
     
         this.createBoard();
         this.addEventListeners();
         this.newGame();
 
-        this.handleKeyPress = this.handleKeyPress.bind(this);
-        this.debouncedHandleKey = myDebounce(this.handleKeyPress, 250);
     }
     
     addEventListeners() {
         document.addEventListener('keydown', e => {
-            if (e.keyCode == 37) {
+            if (e.keyCode == 37) {                
                 this.debouncedHandleKey('left');
             }
             if (e.keyCode == 38) {
@@ -58,53 +59,47 @@ class Game {
         })
 
         // mobile swiping code
+        this.el.addEventListener('touchstart', handleTouchStart, false);
+        this.el.addEventListener('touchmove', handleTouchMove(this.debouncedHandleKey), false);
+
         let xDown = null;
         let yDown = null;
-
-        this.el.addEventListener('touchstart', this.handleTouchStart(xDown, yDown), false);
-        this.el.addEventListener('touchmove', this.handleTouchMove(xDown, yDown), false);
-
-        // function getTouches(evt) {
-        //     return evt.touches ||             // browser API
-        //         evt.originalEvent.touches; // jQuery
-        // }        
-    }
-    
-    handleTouchMove(xDown, yDown) {
-        return e => {
-            if (!xDown || !yDown) return;
-    
-            let xUp = evt.touches[0].clientX;
-            let yUp = evt.touches[0].clientY;
-            let xDiff = xDown - xUp;
-            let yDiff = yDown - yUp;
-    
-            if (Math.abs(xDiff) > Math.abs(yDiff)) {/*most significant*/
-                if (xDiff > 0) {
-                    this.debouncedHandleKey('left');
-                } else {
-                    this.debouncedHandleKey('right');
-                }
-            } else {
-                if (yDiff > 0) {
-                    this.debouncedHandleKey('up');
-                } else {
-                    this.debouncedHandleKey('down');
-                }
-            }
-            xDown = null;
-            yDown = null;
-        }
-    }
-
-    handleTouchStart(e, xDown, yDown) {
-        return (e) => {
+        
+        function handleTouchStart(e) {
             const firstTouch = e.touches[0];
-            // const firstTouch = getTouches(evt)[0];
             xDown = firstTouch.clientX;
-            yDown = firstTouch.clientY; // set x,y
+            yDown = firstTouch.clientY; 
+        };
+        
+        function handleTouchMove(debouncedHandleKey) {
+            return e => {
+                if (!xDown || !yDown) return;
+
+                let xUp = e.touches[0].clientX;
+                let yUp = e.touches[0].clientY;
+                let xDiff = xDown - xUp;
+                let yDiff = yDown - yUp;
+    
+                if (Math.abs(xDiff) > Math.abs(yDiff)) {
+                    if (xDiff > 0) {
+                        debouncedHandleKey('left');
+                    } else {
+                        debouncedHandleKey('right');
+                    }
+                } else {
+                    if (yDiff > 0) {
+                        debouncedHandleKey('up');
+                    } else {
+                        debouncedHandleKey('down');
+                    }
+                }
+                xDown = null;
+                yDown = null;
+            }
         }
     }
+
+
     
     handleKeyPress(direction) { 
         this.executeMoves(direction);
