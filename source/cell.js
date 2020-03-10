@@ -12,11 +12,16 @@ class Cell {
     }
 
     insertTile(tile, prevCell) {
-        if (this.tile) tile.absorb(this.tile);
+        let points = 0;
+
+        if (this.tile) {
+            points = parseInt(tile.absorb(this.tile));
+        }
         
         if (prevCell) prevCell.removeTile(tile);
         this.el.appendChild(tile.el);
         this.tile = tile;
+        return points;
     }
 
     removeTile(tile) {

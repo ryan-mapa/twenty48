@@ -22,6 +22,7 @@ class Tile {
         this.el.innerHTML = this.val; // not taking?!
 
         tile.el.parentElement.removeChild(tile.el);
+        return tile.val;
     }
 
 

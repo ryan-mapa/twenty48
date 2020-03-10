@@ -29,18 +29,24 @@ const myDebounce = function(cb, interval) {
 }
 
 class Game {
-    constructor(el, board = new Board(DIMENSIONS)) {
+    constructor(el, scoreCounter, board = new Board(DIMENSIONS)) {
         this.el = el;
         this.board = board;
+        this.score = 0;
+        this.scoreCounter = scoreCounter;
 
         this.handleKeyPress = this.handleKeyPress.bind(this);
         this.debouncedHandleKey = myDebounce(this.handleKeyPress, 250);
+        this.updateScore = this.updateScore.bind(this);
     
         this.createBoard();
         this.addEventListeners();
         this.newGame();
         // this.endGame(); // for testing!
+    }
 
+    updateScore() {
+        this.scoreCounter.innerText = this.score;
     }
     
     addEventListeners() {
@@ -142,9 +148,12 @@ class Game {
     }
 
     move(tile, pos) {    
+        let points = 0;
         let prevCell = this.board.index(tile.pos);
-        this.board.index(pos).insertTile(tile, prevCell);
+        points = this.board.index(pos).insertTile(tile, prevCell);
         tile.pos = pos;
+        this.score += points;
+        this.updateScore();
     }
 
     fourOrTwo() {
