@@ -19,21 +19,22 @@ html {
     flex-direction: row;
     flex-wrap: wrap;
     width: 360px;
+    justify-content: center;
 }
 
 .cell {
     /* background-color: grey; */
     height: 80px;
     width: 80px;
-    margin: 5px;
+    /* margin: 5px; */
     border-radius: 10px;
     background-position: center;
-    background-size: 101px;
+    background-size: 80px;
     background-image: url('./assets/plate.png');
 }
 
 .tile {
-    color: aquamarine;
+    /* color: aquamarine; */
     text-align: center;
     font-family: Helvetica, sans-serif;
     font-size: 30px;
@@ -85,65 +86,65 @@ h1  {
 .two {
     background-image: url('./assets/maki-1.png');
     background-position: center;
-    background-size: 101px;
+    background-size: 80px;
 }
 
 .four {
     background-image: url('./assets/maki-2.png');
     background-position: center;
-    background-size: 101px;
+    background-size: 80px;
 }
 
 .eight {
     background-image: url('./assets/maki-3.png');
     background-position: center;
-    background-size: 101px;
+    background-size: 80px;
 }
 
 .sixteen {
     background-image: url('./assets/maki-4.png');
     background-position: center;
-    background-size: 101px;
+    background-size: 80px;
 }
 
 .thirty-two {
     background-image: url('./assets/maki-5.png');
     background-position: center;
-    background-size: 101px;
+    background-size: 80px;
 }
 
 .sixty-four {
     background-image: url('./assets/maki-6.png');
     background-position: center;
-    background-size: 101px;
+    background-size: 80px;
 }
 
 .one-twenty-eight {
     background-image: url('./assets/handroll-1.png');
     background-position: center;
-    background-size: 101px;
+    background-size: 80px;
 }
 
 .two-fifty-six {
     background-image: url('./assets/handroll-2.png');
     background-position: center;
-    background-size: 101px;
+    background-size: 80px;
 }
 
 .five-twelve {
     background-image: url('./assets/handroll-3.png');
     background-position: center;
-    background-size: 101px;
+    background-size: 80px;
 }
 
 .ten-twenty-four {
     background-image: url('./assets/nigiri-toro.png');
     background-position: center;
-    background-size: 101px;
+    background-size: 80px;
 }
 
 .twenty-forty-eight {
     background-image: url('./assets/nigiri-uni.png');
     background-position: center;
-    background-size: 101px;
+    background-size: 80px;
 }
