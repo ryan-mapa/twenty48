@@ -148,3 +148,17 @@ h1  {
     background-position: center;
     background-size: 80px;
 }
+
+/* footer */
+
+.footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+}
+
+a {
+    color: red;
+    text-decoration: none;
+}
