@@ -9,6 +9,7 @@ const SESSION_TTL_MS = 6 * 60 * 60 * 1000;  // a run must be submitted within 6h
 const MAX_MOVES = 20000;
 const MIN_MS_PER_MOVE = 200;                // client debounce is 250ms; 200 allows clock slack
 const MINTS_PER_IP_PER_HOUR = 60;
+const MAX_NAME = 20;
 const SESSION_COOKIE = 'sushi48_session';
 const COOKIE_TTL_SECONDS = 30 * 24 * 60 * 60;
 
@@ -38,17 +39,32 @@ function sessionCookie(value, maxAge) {
     return `${SESSION_COOKIE}=${value}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${maxAge}`;
 }
 
-// Anonymous players choose their own name. Rendering uses textContent so
-// there is no injection risk; this is about length and legibility.
-function cleanName(raw) {
-    if (typeof raw !== 'string') return null;
-
-    const name = raw
+// Strips control characters and collapses whitespace, so a name cannot be
+// padded out with invisible characters. Rendering uses textContent, so this
+// is about length and legibility rather than injection.
+export function normaliseName(raw) {
+    if (typeof raw !== 'string') return '';
+    return raw
         .replace(/[\u0000-\u001F\u007F]/g, '')
         .replace(/\s+/g, ' ')
         .trim();
+}
 
-    return name.length >= 1 && name.length <= 20 ? name : null;
+// A name the player typed: they control the length, so an over-long one is a
+// mistake worth reporting rather than silently changing.
+export function cleanName(raw) {
+    const name = normaliseName(raw);
+    return name.length >= 1 && name.length <= MAX_NAME ? name : null;
+}
+
+// A name that came from an OAuth profile: the player did not choose its
+// length, so truncate rather than reject. Rejecting would drop someone whose
+// account name runs long onto the 'Player' fallback.
+export function accountName(raw) {
+    const name = normaliseName(raw);
+    if (!name) return null;
+    if (name.length <= MAX_NAME) return name;
+    return name.slice(0, MAX_NAME - 1).trimEnd() + '\u2026';
 }
 
 async function currentUser(request, env) {
@@ -254,8 +270,9 @@ async function authCallback(request, env) {
     if (!profile.sub) return backToGame(request, 'failed');
 
     // Only `openid profile` is requested, so no email is read or stored. The
-    // leaderboard name is the given name, trimmed to fit.
-    const displayName = cleanName(profile.given_name || profile.name) || 'Player';
+    // leaderboard name is the given name, truncated to fit rather than
+    // rejected if it runs long.
+    const displayName = accountName(profile.given_name || profile.name) || 'Player';
     const userId = `google:${profile.sub}`;
 
     await env.DB.prepare(
