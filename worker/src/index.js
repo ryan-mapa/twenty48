@@ -38,6 +38,19 @@ function sessionCookie(value, maxAge) {
     return `${SESSION_COOKIE}=${value}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${maxAge}`;
 }
 
+// Anonymous players choose their own name. Rendering uses textContent so
+// there is no injection risk; this is about length and legibility.
+function cleanName(raw) {
+    if (typeof raw !== 'string') return null;
+
+    const name = raw
+        .replace(/[\u0000-\u001F\u007F]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    return name.length >= 1 && name.length <= 20 ? name : null;
+}
+
 async function currentUser(request, env) {
     const token = readCookie(request, SESSION_COOKIE);
     if (!token) return null;
@@ -80,7 +93,6 @@ async function createSession(request, env) {
 // place the game rules are trusted. The client's own score is never read.
 async function submitSession(request, env, sessionId) {
     const user = await currentUser(request, env);
-    if (!user) return fail('sign in to post a score', 401);
 
     let body;
     try {
@@ -93,6 +105,11 @@ async function submitSession(request, env, sessionId) {
     if (typeof moves !== 'string' || !Array.isArray(timings)) {
         return fail('moves and timings are required');
     }
+
+    // Signed in: the account owns the name. Otherwise the player supplies one
+    // and it is marked unverified.
+    const displayName = user ? user.name : cleanName(body.name);
+    if (!displayName) return fail('choose a name of 1 to 20 characters');
     if (moves.length === 0) return fail('empty run');
     if (moves.length > MAX_MOVES) return fail('run too long');
     if (timings.length !== moves.length) return fail('timings do not match moves');
@@ -125,6 +142,15 @@ async function submitSession(request, env, sessionId) {
     }
     if (!engine.over) return fail('run did not end in a finished game', 422);
 
+    // A session cookie lives for 30 days and outlives its users row if that
+    // row is ever removed. Without this the insert below fails on the foreign
+    // key and surfaces as a 500 rather than something actionable.
+    if (user) {
+        const known = await env.DB.prepare('SELECT 1 AS ok FROM users WHERE id = ?')
+            .bind(user.sub).first();
+        if (!known) return fail('your sign-in is no longer valid; sign in again', 401);
+    }
+
     const { score, maxTile } = engine.snapshot();
     const now = Date.now();
 
@@ -132,16 +158,26 @@ async function submitSession(request, env, sessionId) {
         env.DB.prepare('UPDATE sessions SET submitted_at = ? WHERE id = ?').bind(now, sessionId),
         env.DB.prepare(
             `INSERT INTO scores
-                (session_id, user_id, score, max_tile, move_count, duration_ms, ruleset_version, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-        ).bind(sessionId, user.sub, score, maxTile, moves.length, durationMs, RULESET_VERSION, now)
+                (session_id, user_id, display_name, verified,
+                 score, max_tile, move_count, duration_ms, ruleset_version, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(
+            sessionId, user ? user.sub : null, displayName, user ? 1 : 0,
+            score, maxTile, moves.length, durationMs, RULESET_VERSION, now
+        )
     ]);
 
+    // Rank counts distinct identities above this score; every anonymous row
+    // is its own identity.
     const { rank } = await env.DB.prepare(
-        'SELECT COUNT(DISTINCT user_id) + 1 AS rank FROM scores WHERE ruleset_version = ? AND score > ?'
+        `SELECT COUNT(*) + 1 AS rank FROM (
+             SELECT 1 FROM scores
+             WHERE ruleset_version = ? AND score > ?
+             GROUP BY COALESCE(user_id, 'anon:' || id)
+         )`
     ).bind(RULESET_VERSION, score).first();
 
-    return json({ score, maxTile, rank, displayName: user.name });
+    return json({ score, maxTile, rank, displayName, verified: Boolean(user) });
 }
 
 // GET /scores — each player's personal best, highest first.
@@ -149,13 +185,17 @@ async function listScores(request, env) {
     const url = new URL(request.url);
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '100', 10) || 100, 100);
 
+    // Signed-in players collapse to their personal best. Anonymous rows each
+    // partition alone, so they stand on their own.
     const { results } = await env.DB.prepare(
-        `SELECT display_name, score, max_tile, created_at FROM (
-             SELECT u.display_name, s.score, s.max_tile, s.created_at,
-                    ROW_NUMBER() OVER (PARTITION BY s.user_id ORDER BY s.score DESC) AS rn
-             FROM scores s
-             JOIN users u ON u.id = s.user_id
-             WHERE s.ruleset_version = ?
+        `SELECT display_name, score, max_tile, verified, created_at FROM (
+             SELECT display_name, score, max_tile, verified, created_at,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY COALESCE(user_id, 'anon:' || id)
+                        ORDER BY score DESC
+                    ) AS rn
+             FROM scores
+             WHERE ruleset_version = ?
          ) WHERE rn = 1
          ORDER BY score DESC
          LIMIT ?`
@@ -164,15 +204,19 @@ async function listScores(request, env) {
     return json({ scores: results }, 200, { 'Cache-Control': 'public, max-age=10' });
 }
 
-// GET /auth/github/start — the OAuth `state` is a short-lived signed token
+// GET /auth/google/start — the OAuth `state` is a short-lived signed token
 // rather than a stored nonce, so this stays stateless.
+//
+// Signing in is optional: it exists so a player can own their leaderboard
+// name, not to gate play or even posting.
 async function authStart(request, env) {
     const state = await signJwt({ purpose: 'oauth' }, env.JWT_SECRET, 600);
 
-    const target = new URL('https://github.com/login/oauth/authorize');
-    target.searchParams.set('client_id', env.GITHUB_CLIENT_ID);
-    target.searchParams.set('redirect_uri', new URL('/auth/github/callback', request.url).toString());
-    target.searchParams.set('scope', 'read:user');
+    const target = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    target.searchParams.set('client_id', env.GOOGLE_CLIENT_ID);
+    target.searchParams.set('redirect_uri', new URL('/auth/google/callback', request.url).toString());
+    target.searchParams.set('response_type', 'code');
+    target.searchParams.set('scope', 'openid profile');
     target.searchParams.set('state', state);
 
     return Response.redirect(target.toString(), 302);
@@ -199,38 +243,38 @@ async function authCallback(request, env) {
         return backToGame(request, 'failed');
     }
 
-    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-            client_id: env.GITHUB_CLIENT_ID,
-            client_secret: env.GITHUB_CLIENT_SECRET,
-            code
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            client_id: env.GOOGLE_CLIENT_ID,
+            client_secret: env.GOOGLE_CLIENT_SECRET,
+            code,
+            grant_type: 'authorization_code',
+            redirect_uri: new URL('/auth/google/callback', request.url).toString()
         })
     });
     const { access_token: accessToken } = await tokenResponse.json();
     if (!accessToken) return backToGame(request, 'failed');
 
-    const profileResponse = await fetch('https://api.github.com/user', {
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-            Accept: 'application/vnd.github+json',
-            'User-Agent': 'sushi48-leaderboard'
-        }
+    const profileResponse = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` }
     });
     const profile = await profileResponse.json();
-    if (!profile.id) return backToGame(request, 'failed');
+    if (!profile.sub) return backToGame(request, 'failed');
 
-    const providerId = String(profile.id);
-    const userId = `github:${providerId}`;
+    // Only `openid profile` is requested, so no email is read or stored. The
+    // leaderboard name is the given name, trimmed to fit.
+    const displayName = cleanName(profile.given_name || profile.name) || 'Player';
+    const userId = `google:${profile.sub}`;
 
     await env.DB.prepare(
         `INSERT INTO users (id, provider, provider_id, display_name, created_at)
-         VALUES (?, 'github', ?, ?, ?)
+         VALUES (?, 'google', ?, ?, ?)
          ON CONFLICT (provider, provider_id) DO UPDATE SET display_name = excluded.display_name`
-    ).bind(userId, providerId, profile.login, Date.now()).run();
+    ).bind(userId, profile.sub, displayName, Date.now()).run();
 
-    const token = await signJwt({ sub: userId, name: profile.login }, env.JWT_SECRET, COOKIE_TTL_SECONDS);
+    const token = await signJwt({ sub: userId, name: displayName }, env.JWT_SECRET, COOKIE_TTL_SECONDS);
     return backToGame(request, 'ok', sessionCookie(token, COOKIE_TTL_SECONDS));
 }
 
@@ -250,8 +294,8 @@ export default {
         if (method === 'POST' && submit) return submitSession(request, env, submit[1]);
 
         if (method === 'GET' && path === '/scores') return listScores(request, env);
-        if (method === 'GET' && path === '/auth/github/start') return authStart(request, env);
-        if (method === 'GET' && path === '/auth/github/callback') return authCallback(request, env);
+        if (method === 'GET' && path === '/auth/google/start') return authStart(request, env);
+        if (method === 'GET' && path === '/auth/google/callback') return authCallback(request, env);
         if (method === 'POST' && path === '/auth/logout') return signOut(request);
 
         // Anything else is a static asset request that found no file.

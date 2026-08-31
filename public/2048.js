@@ -3,7 +3,8 @@ import Leaderboard from './source/leaderboard.js';
 import Overlay from './source/overlay.js';
 import {
     createSession, submitRun, fetchMe, signIn, signOut,
-    savePending, loadPending, clearPending
+    savePending, loadPending, clearPending,
+    rememberedName, rememberName
 } from './source/api.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -28,8 +29,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         score: document.getElementById('final-score'),
         status: document.getElementById('overlay-status'),
         post: document.getElementById('post-score'),
-        playAgain: document.getElementById('play-again')
-    }, { onPost: postScore, onPlayAgain: playAgain });
+        playAgain: document.getElementById('play-again'),
+        nameField: document.getElementById('name-field'),
+        nameInput: document.getElementById('player-name'),
+        signInLink: document.getElementById('signin-link')
+    }, { onPost: postScore, onPlayAgain: playAgain, onSignIn: startSignIn });
 
     function renderAccount() {
         accountEl.replaceChildren();
@@ -63,17 +67,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (sessionId) savePending(sessionId, run);
 
         overlay.show(run.score);
+        overlay.setIdentity({ signedIn: me.signedIn, rememberedName: rememberedName() });
 
         if (!sessionId) {
             overlay.setPost('', false);
             overlay.setStatus('Offline — this run cannot be posted.');
         } else if (me.signedIn) {
             overlay.setPost('POST TO LEADERBOARD', true);
-            overlay.setStatus(`Signed in as ${me.name}.`);
+            overlay.setStatus(`Posting as ${me.name}.`);
         } else {
-            overlay.setPost('SIGN IN & POST', true);
-            overlay.setStatus('Sign in with GitHub to post your score.');
+            overlay.setPost('POST TO LEADERBOARD', true);
+            overlay.setStatus('');
         }
+    }
+
+    // Signing in mid-overlay: buffer the run first so it survives the round
+    // trip to Google and posts automatically on return.
+    function startSignIn() {
+        if (finishedRun && sessionId) savePending(sessionId, finishedRun);
+        signIn();
     }
 
     async function playAgain() {
@@ -85,19 +97,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function postScore() {
         if (!finishedRun || !sessionId) return;
 
-        // Not signed in yet: the run is already buffered, so hand off to
-        // GitHub and finish the post when we come back.
-        if (!me.signedIn) {
-            overlay.setPost('REDIRECTING…', false);
-            signIn();
+        // Anonymous players post under a name they type. No account needed.
+        const name = me.signedIn ? null : overlay.name;
+        if (!me.signedIn && !name) {
+            overlay.setStatus('Enter a name first.');
             return;
         }
 
         overlay.setPost('POSTING…', false);
 
         try {
-            const result = await submitRun(sessionId, finishedRun);
+            const result = await submitRun(sessionId, finishedRun, name);
             clearPending();
+            if (name) rememberName(name);
 
             overlay.setPost('', false);
             overlay.setStatus(`Posted as ${result.displayName} — rank #${result.rank}.`);
@@ -142,6 +154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (posted) {
         overlay.show(posted.score);
+        overlay.setIdentity({ signedIn: true });
         overlay.setPost('', false);
         overlay.setStatus(`Posted as ${posted.displayName} — rank #${posted.rank}.`);
     } else if (authResult === 'failed') {

@@ -6,6 +6,11 @@ import Renderer from './renderer.js';
 // without updating the Worker will start rejecting honest games.
 const MOVE_INTERVAL = 250;
 
+// How far a finger must travel before it counts as a swipe. The original
+// code acted on the first touchmove event whatever its size, which made
+// mis-swipes easy; this is half a tile on a 360px board.
+const SWIPE_THRESHOLD = 40;
+
 const KEY_DIRS = {
     ArrowLeft: 'left',
     ArrowUp: 'up',
@@ -102,30 +107,42 @@ export default class Game {
             this.debouncedMove(dir);
         });
 
-        let xDown = null;
-        let yDown = null;
+        let startX = null;
+        let startY = null;
+        let swiped = false;
 
         this.rootEl.addEventListener('touchstart', e => {
             const touch = e.touches[0];
-            xDown = touch.clientX;
-            yDown = touch.clientY;
-        }, false);
+            startX = touch.clientX;
+            startY = touch.clientY;
+            swiped = false;
+        }, { passive: true });
 
         this.rootEl.addEventListener('touchmove', e => {
-            e.preventDefault();
-            if (xDown === null || yDown === null) return;
+            e.preventDefault(); // stop the page panning under the finger
+            if (startX === null || swiped) return;
 
-            const xDiff = xDown - e.touches[0].clientX;
-            const yDiff = yDown - e.touches[0].clientY;
+            const dx = e.touches[0].clientX - startX;
+            const dy = e.touches[0].clientY - startY;
 
-            if (Math.abs(xDiff) > Math.abs(yDiff)) {
-                this.debouncedMove(xDiff > 0 ? 'left' : 'right');
+            // Wait until the finger has committed to a distance before
+            // deciding, so a small wobble does not fire a move.
+            if (Math.abs(dx) < SWIPE_THRESHOLD && Math.abs(dy) < SWIPE_THRESHOLD) return;
+
+            // One move per touch: the finger must lift before the next.
+            swiped = true;
+
+            if (Math.abs(dx) > Math.abs(dy)) {
+                this.debouncedMove(dx > 0 ? 'right' : 'left');
             } else {
-                this.debouncedMove(yDiff > 0 ? 'up' : 'down');
+                this.debouncedMove(dy > 0 ? 'down' : 'up');
             }
+        }, { passive: false });
 
-            xDown = null;
-            yDown = null;
-        }, false);
+        this.rootEl.addEventListener('touchend', () => {
+            startX = null;
+            startY = null;
+            swiped = false;
+        }, { passive: true });
     }
 }
