@@ -1,8 +1,8 @@
 // Minimal HMAC-SHA256 JWT + hashing helpers built on Web Crypto.
 //
-// Tokens are bearer credentials rather than cookies: the game is served from
-// github.io and this Worker from a different origin, so third-party cookies
-// are unreliable. See the OAuth notes in the README.
+// The signed token this produces is stored in an HttpOnly cookie, never
+// handed to page scripts. It also signs the OAuth `state` parameter, which is
+// what keeps the sign-in flow stateless.
 
 const encoder = new TextEncoder();
 

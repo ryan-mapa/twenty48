@@ -15,7 +15,7 @@ directory = "../public"
 [[d1_databases]]
 binding = "DB"
 database_name = "sushi48"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "5ff9dbd6-5dc2-436a-abb8-54b731526209"
 
 # Secrets, set with `wrangler secret put <NAME>` (never in this file):
 #   JWT_SECRET           random 32+ byte string, signs auth tokens and OAuth state
