@@ -15,10 +15,10 @@ routes handle everything else:
 |---|---|---|---|
 | `GET` | `/me` | cookie | Whether this browser is signed in, and as whom. |
 | `POST` | `/session` | none | Mint a seed. Rate limited per IP. |
-| `POST` | `/session/:id/submit` | cookie | Replay a move log and record the derived score. |
+| `POST` | `/session/:id/submit` | optional | Replay a move log and record the derived score. Anonymous posts supply a name; a session cookie overrides it. |
 | `GET` | `/scores?limit=100` | none | Each player's personal best, highest first. |
-| `GET` | `/auth/github/start` | none | Begin GitHub OAuth. |
-| `GET` | `/auth/github/callback` | none | Finish OAuth, set the session cookie, redirect home. |
+| `GET` | `/auth/google/start` | none | Begin Google OAuth. |
+| `GET` | `/auth/google/callback` | none | Finish OAuth, set the session cookie, redirect home. |
 | `POST` | `/auth/logout` | none | Clear the session cookie. |
 
 ## Deployed at
@@ -32,24 +32,38 @@ database id is in `wrangler.toml`. Day to day you only need:
 npm run deploy
 ```
 
-## Setting up GitHub sign-in
+## Google sign-in
 
-Until this is done the game is fully playable but nobody can post a score.
+Sign-in is optional. Without it players still post scores anonymously by
+typing a name; signing in only makes that name owned and adds a verified tick.
 
-**1. Register an OAuth app** at <https://github.com/settings/developers>:
+**1. Create an OAuth client** at
+<https://console.cloud.google.com/auth/clients> (Web application):
 
-- Homepage URL: `https://sushi48-leaderboard.ryan-mapa.workers.dev`
-- Callback URL: `https://sushi48-leaderboard.ryan-mapa.workers.dev/auth/github/callback`
+- Authorized redirect URI:
+  `https://sushi48-leaderboard.ryan-mapa.workers.dev/auth/google/callback`
 
-The callback must match exactly — a trailing slash or `http` instead of
-`https` will fail.
+The redirect URI must match exactly — a trailing slash or `http` instead of
+`https` fails with a redirect_uri mismatch.
 
 **2. Set the two secrets.** They take effect immediately, no redeploy:
 
 ```sh
-npx wrangler secret put GITHUB_CLIENT_ID
-npx wrangler secret put GITHUB_CLIENT_SECRET
+npx wrangler secret put GOOGLE_CLIENT_ID
+npx wrangler secret put GOOGLE_CLIENT_SECRET
 ```
+
+**3. Add test users** at <https://console.cloud.google.com/auth/audience>.
+
+This project stays on Google's **Testing** publishing status, so only accounts
+listed there can sign in — up to 100. Publishing to production requires an
+authorized domain you can prove you own, and `workers.dev` belongs to
+Cloudflare, so that is not possible without buying a domain. Anonymous posting
+is unaffected, which is why sign-in was made optional.
+
+Testing mode expires Google *refresh* tokens after 7 days. That does not
+matter here: the code is exchanged once at sign-in and the session runs on
+this Worker's own 30-day cookie thereafter.
 
 ## Provisioning from scratch
 
@@ -68,15 +82,15 @@ npm run schema:remote
 npm run deploy
 ```
 
-**3. Register the GitHub OAuth app** as above, using that URL.
+**3. Create the Google OAuth client** as above, using that URL.
 
 **4. Set all four secrets** (never put these in `wrangler.toml`):
 
 ```sh
 openssl rand -base64 48 | npx wrangler secret put JWT_SECRET
 openssl rand -base64 32 | npx wrangler secret put IP_SALT
-npx wrangler secret put GITHUB_CLIENT_ID
-npx wrangler secret put GITHUB_CLIENT_SECRET
+npx wrangler secret put GOOGLE_CLIENT_ID
+npx wrangler secret put GOOGLE_CLIENT_SECRET
 ```
 
 That is the whole deployment. There is no separate static host and no URL to
@@ -92,8 +106,8 @@ npm run schema:local
 npm run dev          # game + API on http://localhost:8787
 ```
 
-OAuth will not complete locally without a real GitHub app pointed at
-localhost. To exercise the submit path, mint an HS256 JWT with the same
+OAuth will not complete locally without a Google OAuth client whose redirect
+URI points at localhost. To exercise the submit path, mint an HS256 JWT with the same
 `JWT_SECRET` (payload `{ sub, name }`), insert a matching row into `users`,
 and send it as a `sushi48_session` cookie.
 
@@ -110,7 +124,8 @@ Rejected unless all of these hold:
 - `timings` is non-decreasing and the same length as `moves`
 - the run took at least 200ms per move (the client debounce is 250ms)
 - the move log replays cleanly and ends in a real game-over
-- the caller presents a valid session cookie
+- a name is present: either from the session cookie, or 1-20 characters
+  supplied in the request body
 
 The score written is always the one this Worker computed. Any `score` field in
 the request body is ignored.

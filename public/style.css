@@ -1,256 +1,304 @@
+/* SUSHI48 ------------------------------------------------------------------
+   The palette takes its cue from the artwork: pale green ground, cream
+   plates, and a single warm red used sparingly as an accent. Borders are
+   hairline and tinted rather than solid red, so the sushi stays the loudest
+   thing on the page. */
+
+:root {
+    --bg: #e1efc7;
+    --panel: rgba(255, 255, 255, 0.86);
+    --panel-solid: #ffffff;
+    --ink: #232d1b;
+    --muted: #6b7a5b;
+    --line: rgba(52, 70, 36, 0.30);
+    --line-strong: rgba(52, 70, 36, 0.52);
+    --accent: #d33f2a;
+    --verified: #2f8f66;
+    --shadow: 0 1px 2px rgba(45, 62, 32, 0.10), 0 5px 16px rgba(45, 62, 32, 0.11);
+    --radius: 14px;
+
+    /* The board sets the width everything else lines up to. */
+    --board: min(360px, 86vw);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 html {
+    background-color: var(--bg);
+}
+
+body {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #E1EFC7;
-    /* font-family: Arial, Helvetica, sans-serif; */
-    font-family: Noto Sans;
-    
-}
-
-#g2048 {
-    /* background-color: black; */
-    padding: 5px;
-    border-radius: 10px;
-}
-
-.game-container {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    width: 360px;
-    justify-content: center;
-}
-
-.cell {
-    /* background-color: grey; */
-    height: 80px;
-    width: 80px;
-    /* margin: 5px; */
-    border-radius: 10px;
-    background-position: center;
-    background-size: 80px;
-    background-image: url('./assets/plate.png');
-}
-
-.tile {
-    /* color: aquamarine; */
-    text-align: center;
-    font-family: Helvetica, sans-serif;
-    font-size: 30px;
-    /* background-color: red; */
-    height: 57px;
-    width: 100%;
-    border-radius: 10px;
-    padding-top: 23px;
-}
-
-/* header stuff */
-
-.game-header {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-}
-
-.score-counter {
-    color: black;
-    /* text-align: center; */
-    font-size: 15px;
-    /* filter: drop-shadow(10px 5px 10px rgb(68, 136, 114)); */
-    border: 3px solid red;
-    border-radius: 10px;
-    padding: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     flex-direction: column;
-}
-
-h1  {
-    color: black;
-    text-align: center;
-    font-size: 40px;
-    /* filter: drop-shadow(10px 5px 10px rgb(68, 136, 114)); */
-}
-
-.red {
-    color: red;
-}
-
-
-
-
-/* the sushi */
-
-.two {
-    background-image: url('./assets/maki-1.png');
-    background-position: center;
-    background-size: 80px;
-}
-
-.four {
-    background-image: url('./assets/maki-2.png');
-    background-position: center;
-    background-size: 80px;
-}
-
-.eight {
-    background-image: url('./assets/maki-3.png');
-    background-position: center;
-    background-size: 80px;
-}
-
-.sixteen {
-    background-image: url('./assets/maki-4.png');
-    background-position: center;
-    background-size: 80px;
-}
-
-.thirty-two {
-    background-image: url('./assets/maki-5.png');
-    background-position: center;
-    background-size: 80px;
-}
-
-.sixty-four {
-    background-image: url('./assets/maki-6.png');
-    background-position: center;
-    background-size: 80px;
-}
-
-.one-twenty-eight {
-    background-image: url('./assets/handroll-1.png');
-    background-position: center;
-    background-size: 80px;
-}
-
-.two-fifty-six {
-    background-image: url('./assets/handroll-2.png');
-    background-position: center;
-    background-size: 80px;
-}
-
-.five-twelve {
-    background-image: url('./assets/handroll-3.png');
-    background-position: center;
-    background-size: 80px;
-}
-
-.ten-twenty-four {
-    background-image: url('./assets/nigiri-toro.png');
-    background-position: center;
-    background-size: 80px;
-}
-
-.twenty-forty-eight {
-    background-image: url('./assets/nigiri-uni.png');
-    background-position: center;
-    background-size: 80px;
-}
-
-/* footer */
-
-.footer {
-    display: flex;
-    justify-content: center;
     align-items: center;
-    text-decoration: none;
+    gap: 22px;
+    min-height: 100vh;
+    margin: 0;
+    padding: 28px 18px 36px;
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-text-size-adjust: 100%;
 }
 
 a {
-    color: red;
+    color: var(--accent);
     text-decoration: none;
 }
 
-/* Past nigiri-uni there is no art left, so high tiles reuse the uni plate
-   and label themselves. */
-.tile-high {
-    color: white;
+a:hover {
+    text-decoration: underline;
+}
+
+/* header ------------------------------------------------------------------
+   A three-item row on one baseline. Everything shares a height so the title,
+   score and button line up instead of floating at their own offsets. */
+
+.game-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    width: 100%;
+    /* Board (360) + gap (22) + leaderboard (325): keeps the header's outer
+       edges flush with the content beneath it. */
+    max-width: 707px;
+}
+
+h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: clamp(26px, 7vw, 40px);
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+.logo {
+    /* Tracks the wordmark rather than sitting at a fixed size. */
+    width: clamp(38px, 9vw, 52px);
+    height: auto;
+    flex: 0 0 auto;
+}
+
+.red {
+    color: var(--accent);
+}
+
+.score-counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 86px;
+    height: 54px;
+    padding: 0 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background-color: var(--panel);
+    box-shadow: var(--shadow);
+}
+
+.score-counter > div:first-child {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+}
+
+#score {
     font-size: 22px;
     font-weight: 700;
-    text-shadow: 0 0 4px black, 0 0 8px black;
+    line-height: 1;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
 }
 
-/* layout */
-
-.layout {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 24px;
-    flex-wrap: wrap;
-}
+/* buttons */
 
 .button {
+    height: 54px;
+    padding: 0 18px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background-color: var(--panel-solid);
+    color: var(--ink);
     font-family: inherit;
+    font-size: 11px;
     font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 1px;
-    background-color: white;
-    color: black;
-    border: 3px solid red;
-    border-radius: 10px;
-    padding: 10px 14px;
+    letter-spacing: 1.5px;
     cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .button:hover:not(:disabled) {
-    background-color: red;
-    color: white;
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.button:active:not(:disabled) {
+    transform: translateY(1px);
 }
 
 .button:disabled {
-    opacity: 0.5;
+    opacity: 0.45;
     cursor: default;
 }
+
+/* layout ------------------------------------------------------------------
+   Board and leaderboard sit side by side on wide screens and stack on narrow
+   ones, both aligned to the same top edge. */
+
+.layout {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 22px;
+    width: 100%;
+}
+
+/* board */
+
+#g2048 {
+    /* Stops the browser panning or zooming the page mid-swipe. */
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.game-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    width: var(--board);
+    aspect-ratio: 1;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background-color: rgba(255, 255, 255, 0.52);
+    box-shadow: var(--shadow);
+}
+
+.cell {
+    position: relative;
+    border-radius: 10px;
+    background-image: url('./assets/plate.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.tile {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+/* Past nigiri-uni there is no art left, so a high tile reuses the uni plate
+   and labels itself. The engine caps tiles at 2048, so this is a safety net
+   rather than something reachable in normal play. */
+.tile-high {
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.9), 0 0 9px rgba(0, 0, 0, 0.7);
+}
+
+.poof {
+    pointer-events: none;
+}
+
+/* the sushi */
+
+.two { background-image: url('./assets/maki-1.png'); }
+.four { background-image: url('./assets/maki-2.png'); }
+.eight { background-image: url('./assets/maki-3.png'); }
+.sixteen { background-image: url('./assets/maki-4.png'); }
+.thirty-two { background-image: url('./assets/maki-5.png'); }
+.sixty-four { background-image: url('./assets/maki-6.png'); }
+.one-twenty-eight { background-image: url('./assets/handroll-1.png'); }
+.two-fifty-six { background-image: url('./assets/handroll-2.png'); }
+.five-twelve { background-image: url('./assets/handroll-3.png'); }
+.ten-twenty-four { background-image: url('./assets/nigiri-toro.png'); }
+.twenty-forty-eight { background-image: url('./assets/nigiri-uni.png'); }
 
 /* leaderboard */
 
 .leaderboard {
-    box-sizing: border-box;
-    width: 260px;
-    padding: 12px 16px;
-    border: 3px solid red;
-    border-radius: 10px;
-    background-color: rgba(255, 255, 255, 0.55);
+    display: flex;
+    flex-direction: column;
+    width: 325px;
+    max-width: 100%;
+    /* Match the board exactly, so the two cards share a bottom edge however
+       many scores there are. */
+    height: var(--board);
+    padding: 16px 18px;
+    border: 1px solid var(--line-strong);
+    border-radius: 18px;
+    background-color: var(--panel);
+    box-shadow: var(--shadow);
 }
 
 .leaderboard h2 {
-    margin: 0 0 10px;
-    font-size: 18px;
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
     text-align: center;
+    color: var(--accent);
 }
 
 .leaderboard ol {
     counter-reset: rank;
     list-style: none;
     margin: 0;
-    padding: 0;
-    max-height: 320px;
+    /* Keeps the scrollbar clear of the score column. */
+    padding: 0 14px 0 0;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    scrollbar-width: thin;
 }
 
 .leaderboard li {
     counter-increment: rank;
     display: flex;
     align-items: baseline;
-    gap: 8px;
-    padding: 5px 0;
+    gap: 10px;
+    padding: 7px 0;
     font-size: 14px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid var(--line);
+}
+
+.leaderboard li:last-child {
+    border-bottom: none;
 }
 
 .leaderboard li::before {
-    content: counter(rank) ".";
-    width: 26px;
-    color: #999;
-    font-size: 12px;
+    content: counter(rank);
+    flex: 0 0 18px;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
 }
 
 .leaderboard li.is-you {
-    color: red;
+    color: var(--accent);
     font-weight: 700;
 }
 
@@ -261,26 +309,61 @@ a {
     text-overflow: ellipsis;
 }
 
+.entry-verified {
+    margin-left: 5px;
+    font-size: 11px;
+    color: var(--verified);
+}
+
 .entry-score {
     font-weight: 700;
+    font-variant-numeric: tabular-nums;
 }
 
 .leaderboard-status {
     margin: 0;
     font-size: 13px;
-    color: #777;
+    color: var(--muted);
     text-align: center;
 }
 
-/* game over */
+/* These two are populated conditionally; empty ones would otherwise leave a
+   stray gap and a dangling divider in the card. */
+.leaderboard-status:empty,
+.account:empty {
+    display: none;
+}
+
+.account {
+    margin: 12px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+}
+
+/* footer */
+
+.footer {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+}
+
+/* game over ---------------------------------------------------------------- */
 
 .overlay {
     position: fixed;
     inset: 0;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(225, 239, 199, 0.93);
+    padding: 20px;
+    background-color: rgba(225, 239, 199, 0.9);
+    backdrop-filter: blur(3px);
 }
 
 /* .overlay sets display, so the hidden attribute needs to win explicitly */
@@ -289,35 +372,85 @@ a {
 }
 
 .overlay-card {
-    max-width: 90vw;
-    padding: 28px 32px;
+    width: 100%;
+    max-width: 340px;
+    padding: 28px 26px 22px;
     text-align: center;
-    background-color: white;
-    border: 3px solid red;
-    border-radius: 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 20px;
+    background-color: var(--panel-solid);
+    box-shadow: 0 10px 40px rgba(56, 72, 42, 0.18);
 }
 
 .overlay-card h2 {
-    margin: 0 0 10px;
+    margin: 0 0 18px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--muted);
 }
 
 .final-score {
-    margin: 0 0 14px;
-    font-size: 13px;
+    margin: 0 0 22px;
+    font-size: 10px;
+    font-weight: 700;
     letter-spacing: 2px;
+    color: var(--muted);
 }
 
 .final-score span {
     display: block;
-    font-size: 42px;
-    color: red;
+    margin-top: 4px;
+    font-size: 44px;
+    line-height: 1;
+    letter-spacing: -1px;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+}
+
+.name-field {
+    margin: 0 0 14px;
+    text-align: left;
+}
+
+.name-field label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+}
+
+.name-field input {
+    width: 100%;
+    height: 46px;
+    padding: 0 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background-color: white;
+    color: var(--ink);
+    font-family: inherit;
+    /* 16px keeps iOS Safari from zooming the page on focus. */
+    font-size: 16px;
+    text-align: center;
+}
+
+.name-field input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.name-field input::placeholder {
+    color: #c3ccb8;
 }
 
 .overlay-status {
-    min-height: 18px;
-    margin: 0 0 18px;
-    font-size: 13px;
-    color: #444;
+    min-height: 17px;
+    margin: 0 0 16px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--muted);
 }
 
 .overlay-actions {
@@ -327,73 +460,60 @@ a {
     flex-wrap: wrap;
 }
 
-/* merge effects */
-
-.cell {
-    position: relative;
-}
-
-.poof {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-}
-
-.account {
-    margin: 10px 0 0;
-    font-size: 12px;
-    color: #777;
-    text-align: center;
-}
-
-/* name entry + sign-in */
-
-.name-field {
-    margin: 0 0 14px;
-}
-
-.name-field label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: #777;
-}
-
-.name-field input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 9px 12px;
-    font-family: inherit;
-    font-size: 16px;
-    text-align: center;
-    border: 3px solid red;
-    border-radius: 10px;
-    background-color: white;
-    color: black;
-}
-
-.name-field input::placeholder {
-    color: #bbb;
-    font-weight: 400;
-}
-
 .overlay-signin {
-    margin: 16px 0 0;
+    margin: 18px 0 0;
     font-size: 12px;
 }
 
 .overlay-signin a {
-    color: #888;
+    color: var(--muted);
     text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 .overlay-signin a:hover {
-    color: red;
+    color: var(--accent);
 }
 
-.entry-verified {
-    margin-left: 5px;
-    font-size: 11px;
-    color: #4a9;
+/* narrow screens ----------------------------------------------------------- */
+
+@media (max-width: 700px) {
+    body {
+        gap: 18px;
+        padding: 18px 14px 28px;
+    }
+
+    .game-header {
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    h1 {
+        flex: 1 1 100%;
+        justify-content: center;
+    }
+
+    .score-counter,
+    .button {
+        flex: 1 1 0;
+        height: 48px;
+    }
+
+    /* Keep the score and button inside the board's footprint rather than
+       running to the edges of the screen. */
+    .game-header,
+    .leaderboard {
+        width: var(--board);
+        max-width: var(--board);
+    }
+
+    /* Stacked under the board, the card grows with its contents rather than
+       being pinned to the board's height. */
+    .leaderboard {
+        height: auto;
+    }
+
+    .leaderboard ol {
+        max-height: 46vh;
+    }
 }

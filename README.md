@@ -69,10 +69,11 @@ npm run dev                            # game + API on http://localhost:8787
 
 `npm run dev` runs `wrangler dev`, serving `public/` and the API together
 exactly as production does. Sign-in will not work locally without a real
-GitHub OAuth app; everything else does.
+Google OAuth client pointed at localhost; everything else does, including
+anonymous score posting.
 
 ```sh
-npm test        # 46 tests
+npm test        # 63 tests
 npm run watch   # re-run on change
 ```
 
@@ -83,7 +84,10 @@ The tests worth knowing about:
 - `test/determinism.test.js` — the load-bearing one. A seed plus a move log
   must produce a byte-identical game every time, or replay verification is
   worthless.
-- `test/render.test.js` — DOM rendering and input handling under happy-dom.
+- `test/render.test.js` — DOM rendering, keyboard and swipe handling under
+  happy-dom, including the 40px swipe threshold.
+- `test/names.test.js` — the two name rules: a typed name is rejected when too
+  long, an OAuth profile name is truncated.
 
 ## Deploying
 

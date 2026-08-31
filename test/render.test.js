@@ -11,6 +11,12 @@ function mount() {
     };
 }
 
+function touch(root, type, x, y) {
+    const event = new Event(type, { bubbles: true, cancelable: true });
+    event.touches = [{ clientX: x, clientY: y }];
+    root.dispatchEvent(event);
+}
+
 function press(key) {
     document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
 }
@@ -149,5 +155,74 @@ describe('game', () => {
         expect(run.moves).toBe('');
         expect(run.seed).toBe(2);
         expect(run.score).toBe(0);
+    });
+});
+
+describe('swipe', () => {
+    beforeEach(mount);
+
+    it('ignores a drag shorter than the threshold', () => {
+        const { root, score } = mount();
+        const game = new Game(root, score, { seed: 1 });
+
+        touch(root, 'touchstart', 200, 200);
+        touch(root, 'touchmove', 170, 200); // 30px, under the 40px threshold
+
+        expect(game.run().moves).toBe('');
+    });
+
+    it('registers a drag past the threshold', () => {
+        const { root, score } = mount();
+        const game = new Game(root, score, { seed: 1 });
+
+        touch(root, 'touchstart', 200, 200);
+        touch(root, 'touchmove', 140, 200); // 60px left
+
+        expect(game.run().moves).toBe('L');
+    });
+
+    it('reads direction from the dominant axis', () => {
+        const cases = [
+            [200, 290, 'D'],
+            [200, 110, 'U'],
+            [290, 200, 'R'],
+            [110, 200, 'L']
+        ];
+
+        for (const [x, y, expected] of cases) {
+            const { root, score } = mount();
+            const game = new Game(root, score, { seed: 1 });
+
+            touch(root, 'touchstart', 200, 200);
+            touch(root, 'touchmove', x, y);
+
+            expect(game.run().moves).toBe(expected);
+        }
+    });
+
+    it('fires at most once per touch', () => {
+        const { root, score } = mount();
+        const game = new Game(root, score, { seed: 1 });
+
+        touch(root, 'touchstart', 200, 200);
+        touch(root, 'touchmove', 140, 200);
+        touch(root, 'touchmove', 80, 200);
+        touch(root, 'touchmove', 20, 200);
+
+        expect(game.run().moves).toBe('L');
+    });
+
+    it('allows a new swipe after the finger lifts', () => {
+        const { root, score } = mount();
+        const game = new Game(root, score, { seed: 1 });
+
+        touch(root, 'touchstart', 200, 200);
+        touch(root, 'touchmove', 140, 200);
+        touch(root, 'touchend', 140, 200);
+
+        // The 250ms debounce still gates the second move, so only the
+        // recorded first one is asserted here.
+        expect(game.run().moves).toBe('L');
+        expect(game.engine.over).toBe(false);
     });
 });
