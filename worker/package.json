@@ -9,6 +9,6 @@
     "schema:remote": "wrangler d1 execute sushi48 --remote --file=schema.sql"
   },
   "devDependencies": {
-    "wrangler": "^3.90.0"
+    "wrangler": "^4.127.1"
   }
 }
