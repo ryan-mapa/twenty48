@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
+    <link rel="icon" type="image/png" href="./assets/favicon.png">
+    <link rel="apple-touch-icon" href="./assets/favicon.png">
+    <meta name="theme-color" content="#e1efc7">
+
     <link href="https://fonts.googleapis.com/css?family=Noto+Sans:700&display=swap" rel="stylesheet">
     <script type="module" src="./2048.js"></script>
     <link rel="stylesheet" href="./style.css">
@@ -12,7 +16,10 @@
 </head>
 <body>
     <div class="game-header">
-        <h1>SUSHI<span class="red">48</span></h1>
+        <h1>
+            <img src="./assets/toro-chopsticks.png" alt="" class="logo" width="256" height="256">
+            <span>SUSHI<span class="red">48</span></span>
+        </h1>
         <div class="score-counter"><div>SCORE</div><div id="score">0</div></div>
         <button type="button" id="restart" class="button">NEW GAME</button>
     </div>

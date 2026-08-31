@@ -6,16 +6,19 @@
 
 :root {
     --bg: #e1efc7;
-    --panel: rgba(255, 255, 255, 0.66);
-    --panel-solid: #fdfefb;
-    --ink: #2f3b26;
-    --muted: #7c8a6c;
-    --line: rgba(64, 82, 48, 0.16);
-    --line-strong: rgba(64, 82, 48, 0.28);
-    --accent: #d9503f;
-    --verified: #4f9d7a;
-    --shadow: 0 1px 2px rgba(56, 72, 42, 0.06), 0 6px 18px rgba(56, 72, 42, 0.07);
+    --panel: rgba(255, 255, 255, 0.86);
+    --panel-solid: #ffffff;
+    --ink: #232d1b;
+    --muted: #6b7a5b;
+    --line: rgba(52, 70, 36, 0.30);
+    --line-strong: rgba(52, 70, 36, 0.52);
+    --accent: #d33f2a;
+    --verified: #2f8f66;
+    --shadow: 0 1px 2px rgba(45, 62, 32, 0.10), 0 5px 16px rgba(45, 62, 32, 0.11);
     --radius: 14px;
+
+    /* The board sets the width everything else lines up to. */
+    --board: min(360px, 86vw);
 }
 
 *,
@@ -68,11 +71,21 @@ a:hover {
 }
 
 h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     flex: 1 1 auto;
     margin: 0;
-    font-size: clamp(28px, 7vw, 40px);
+    font-size: clamp(26px, 7vw, 40px);
     line-height: 1;
     letter-spacing: -0.5px;
+}
+
+.logo {
+    /* Tracks the wordmark rather than sitting at a fixed size. */
+    width: clamp(38px, 9vw, 52px);
+    height: auto;
+    flex: 0 0 auto;
 }
 
 .red {
@@ -88,7 +101,7 @@ h1 {
     min-width: 86px;
     height: 54px;
     padding: 0 14px;
-    border: 1px solid var(--line);
+    border: 1px solid var(--line-strong);
     border-radius: var(--radius);
     background-color: var(--panel);
     box-shadow: var(--shadow);
@@ -105,6 +118,7 @@ h1 {
     font-size: 22px;
     font-weight: 700;
     line-height: 1;
+    color: var(--accent);
     font-variant-numeric: tabular-nums;
 }
 
@@ -166,11 +180,12 @@ h1 {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
-    width: min(360px, 86vw);
+    width: var(--board);
     aspect-ratio: 1;
     padding: 8px;
+    border: 1px solid var(--line);
     border-radius: 18px;
-    background-color: rgba(255, 255, 255, 0.34);
+    background-color: rgba(255, 255, 255, 0.52);
     box-shadow: var(--shadow);
 }
 
@@ -228,7 +243,7 @@ h1 {
     width: 260px;
     max-width: 100%;
     padding: 16px 18px;
-    border: 1px solid var(--line);
+    border: 1px solid var(--line-strong);
     border-radius: 18px;
     background-color: var(--panel);
     box-shadow: var(--shadow);
@@ -339,7 +354,7 @@ h1 {
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background-color: rgba(225, 239, 199, 0.86);
+    background-color: rgba(225, 239, 199, 0.9);
     backdrop-filter: blur(3px);
 }
 
@@ -353,7 +368,7 @@ h1 {
     max-width: 340px;
     padding: 28px 26px 22px;
     text-align: center;
-    border: 1px solid var(--line);
+    border: 1px solid var(--line-strong);
     border-radius: 20px;
     background-color: var(--panel-solid);
     box-shadow: 0 10px 40px rgba(56, 72, 42, 0.18);
@@ -467,7 +482,7 @@ h1 {
 
     h1 {
         flex: 1 1 100%;
-        text-align: center;
+        justify-content: center;
     }
 
     .score-counter,
@@ -476,7 +491,11 @@ h1 {
         height: 48px;
     }
 
+    /* Keep the score and button inside the board's footprint rather than
+       running to the edges of the screen. */
+    .game-header,
     .leaderboard {
-        width: min(360px, 86vw);
+        width: var(--board);
+        max-width: var(--board);
     }
 }
