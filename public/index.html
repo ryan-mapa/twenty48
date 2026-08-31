@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans:700&display=swap" rel="stylesheet">
+    <script type="module" src="./2048.js"></script>
+    <link rel="stylesheet" href="./style.css">
+    <title>SUSHI48</title>
+</head>
+<body>
+    <div class="game-header">
+        <h1>SUSHI<span class="red">48</span></h1>
+        <div class="score-counter"><div>SCORE</div><div id="score">0</div></div>
+        <button type="button" id="restart" class="button">NEW GAME</button>
+    </div>
+
+    <div class="layout">
+        <div id='g2048'></div>
+
+        <aside class="leaderboard">
+            <h2>LEADERBOARD</h2>
+            <p id="leaderboard-status" class="leaderboard-status">Loading…</p>
+            <ol id="leaderboard-list"></ol>
+            <p id="account" class="account"></p>
+        </aside>
+    </div>
+
+    <h3 class="footer">Art by:&nbsp<a target='_blank' href="https://www.robynhwang.com/">Robyn Hwang</a></h3>
+
+    <div id="gameover" class="overlay" hidden>
+        <div class="overlay-card">
+            <h2>GAME OVER</h2>
+            <p class="final-score">SCORE <span id="final-score">0</span></p>
+            <p id="overlay-status" class="overlay-status"></p>
+            <div class="overlay-actions">
+                <button type="button" id="post-score" class="button">POST TO LEADERBOARD</button>
+                <button type="button" id="play-again" class="button">PLAY AGAIN</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
