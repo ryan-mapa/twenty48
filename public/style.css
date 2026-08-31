@@ -162,3 +162,186 @@ a {
     color: red;
     text-decoration: none;
 }
+
+/* Past nigiri-uni there is no art left, so high tiles reuse the uni plate
+   and label themselves. */
+.tile-high {
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+    text-shadow: 0 0 4px black, 0 0 8px black;
+}
+
+/* layout */
+
+.layout {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.button {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+    background-color: white;
+    color: black;
+    border: 3px solid red;
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+    background-color: red;
+    color: white;
+}
+
+.button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* leaderboard */
+
+.leaderboard {
+    box-sizing: border-box;
+    width: 260px;
+    padding: 12px 16px;
+    border: 3px solid red;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.55);
+}
+
+.leaderboard h2 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    text-align: center;
+}
+
+.leaderboard ol {
+    counter-reset: rank;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.leaderboard li {
+    counter-increment: rank;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 5px 0;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.leaderboard li::before {
+    content: counter(rank) ".";
+    width: 26px;
+    color: #999;
+    font-size: 12px;
+}
+
+.leaderboard li.is-you {
+    color: red;
+    font-weight: 700;
+}
+
+.entry-name {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.entry-score {
+    font-weight: 700;
+}
+
+.leaderboard-status {
+    margin: 0;
+    font-size: 13px;
+    color: #777;
+    text-align: center;
+}
+
+/* game over */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(225, 239, 199, 0.93);
+}
+
+/* .overlay sets display, so the hidden attribute needs to win explicitly */
+.overlay[hidden] {
+    display: none;
+}
+
+.overlay-card {
+    max-width: 90vw;
+    padding: 28px 32px;
+    text-align: center;
+    background-color: white;
+    border: 3px solid red;
+    border-radius: 14px;
+}
+
+.overlay-card h2 {
+    margin: 0 0 10px;
+}
+
+.final-score {
+    margin: 0 0 14px;
+    font-size: 13px;
+    letter-spacing: 2px;
+}
+
+.final-score span {
+    display: block;
+    font-size: 42px;
+    color: red;
+}
+
+.overlay-status {
+    min-height: 18px;
+    margin: 0 0 18px;
+    font-size: 13px;
+    color: #444;
+}
+
+.overlay-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* merge effects */
+
+.cell {
+    position: relative;
+}
+
+.poof {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.account {
+    margin: 10px 0 0;
+    font-size: 12px;
+    color: #777;
+    text-align: center;
+}

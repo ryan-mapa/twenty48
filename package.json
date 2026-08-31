@@ -1,0 +1,16 @@
+{
+  "name": "twenty48",
+  "version": "1.0.0",
+  "description": "Sushi-themed 2048 with a replay-verified leaderboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "watch": "vitest",
+    "dev": "npm --prefix worker run dev"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.12.0",
+    "vitest": "^2.1.9"
+  }
+}

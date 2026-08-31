@@ -1,0 +1,151 @@
+import Game from './source/game.js';
+import Leaderboard from './source/leaderboard.js';
+import Overlay from './source/overlay.js';
+import {
+    createSession, submitRun, fetchMe, signIn, signOut,
+    savePending, loadPending, clearPending
+} from './source/api.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const rootEl = document.getElementById('g2048');
+    const scoreEl = document.getElementById('score');
+    const accountEl = document.getElementById('account');
+
+    const leaderboard = new Leaderboard(
+        document.getElementById('leaderboard-list'),
+        document.getElementById('leaderboard-status')
+    );
+
+    // The id of the server-issued session the current game belongs to. Null
+    // means we could not reach the API, so this run is playable but not
+    // postable — there is no seed on record to verify it against.
+    let sessionId = null;
+    let finishedRun = null;
+    let me = { signedIn: false };
+
+    const overlay = new Overlay({
+        root: document.getElementById('gameover'),
+        score: document.getElementById('final-score'),
+        status: document.getElementById('overlay-status'),
+        post: document.getElementById('post-score'),
+        playAgain: document.getElementById('play-again')
+    }, { onPost: postScore, onPlayAgain: playAgain });
+
+    function renderAccount() {
+        accountEl.replaceChildren();
+        if (!me.signedIn) return;
+
+        accountEl.append(`${me.name} · `);
+
+        const link = document.createElement('a');
+        link.href = '#';
+        link.textContent = 'sign out';
+        link.addEventListener('click', event => {
+            event.preventDefault();
+            signOut();
+        });
+        accountEl.appendChild(link);
+    }
+
+    async function newSession() {
+        try {
+            const session = await createSession();
+            sessionId = session.sessionId;
+            return session.seed;
+        } catch {
+            sessionId = null;
+            return undefined; // Game falls back to a local random seed
+        }
+    }
+
+    function onGameOver(run) {
+        finishedRun = run;
+        if (sessionId) savePending(sessionId, run);
+
+        overlay.show(run.score);
+
+        if (!sessionId) {
+            overlay.setPost('', false);
+            overlay.setStatus('Offline — this run cannot be posted.');
+        } else if (me.signedIn) {
+            overlay.setPost('POST TO LEADERBOARD', true);
+            overlay.setStatus(`Signed in as ${me.name}.`);
+        } else {
+            overlay.setPost('SIGN IN & POST', true);
+            overlay.setStatus('Sign in with GitHub to post your score.');
+        }
+    }
+
+    async function playAgain() {
+        overlay.hide();
+        finishedRun = null;
+        game.newGame(await newSession());
+    }
+
+    async function postScore() {
+        if (!finishedRun || !sessionId) return;
+
+        // Not signed in yet: the run is already buffered, so hand off to
+        // GitHub and finish the post when we come back.
+        if (!me.signedIn) {
+            overlay.setPost('REDIRECTING…', false);
+            signIn();
+            return;
+        }
+
+        overlay.setPost('POSTING…', false);
+
+        try {
+            const result = await submitRun(sessionId, finishedRun);
+            clearPending();
+
+            overlay.setPost('', false);
+            overlay.setStatus(`Posted as ${result.displayName} — rank #${result.rank}.`);
+            await leaderboard.refresh(result.displayName);
+        } catch (error) {
+            overlay.setPost('TRY AGAIN', true);
+            overlay.setStatus(error.message);
+        }
+    }
+
+    // A run buffered before signing in, or one a previous visit never managed
+    // to send.
+    async function flushPending() {
+        const pending = loadPending();
+        if (!pending || !me.signedIn) return null;
+
+        try {
+            const result = await submitRun(pending.sessionId, pending.run);
+            clearPending();
+            return result;
+        } catch {
+            // Leave it buffered; the session may simply have expired, in
+            // which case the next successful post will overwrite it.
+            return null;
+        }
+    }
+
+    document.getElementById('restart').addEventListener('click', playAgain);
+
+    me = await fetchMe();
+    renderAccount();
+
+    const game = new Game(rootEl, scoreEl, { seed: await newSession(), onGameOver });
+
+    // ?auth=ok means we just came back from GitHub, so there is very likely a
+    // buffered run waiting to go out.
+    const authResult = new URLSearchParams(location.search).get('auth');
+    if (authResult) history.replaceState(null, '', location.pathname);
+
+    const posted = await flushPending();
+    await leaderboard.refresh(posted ? posted.displayName : me.name);
+
+    if (posted) {
+        overlay.show(posted.score);
+        overlay.setPost('', false);
+        overlay.setStatus(`Posted as ${posted.displayName} — rank #${posted.rank}.`);
+    } else if (authResult === 'failed') {
+        overlay.setStatus('');
+        leaderboard.statusEl.textContent = 'Sign-in failed. Try again.';
+    }
+});

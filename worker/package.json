@@ -1,0 +1,14 @@
+{
+  "name": "sushi48-leaderboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "schema:local": "wrangler d1 execute sushi48 --local --file=schema.sql",
+    "schema:remote": "wrangler d1 execute sushi48 --remote --file=schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}

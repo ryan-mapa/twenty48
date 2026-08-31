@@ -1,0 +1,28 @@
+name = "sushi48-leaderboard"
+main = "src/index.js"
+compatibility_date = "2026-08-30"
+
+# This Worker serves the game as well as the API. Static files live in
+# ../public and are served first; anything that matches no file falls through
+# to the fetch handler in src/index.js.
+#
+# It also imports ../../public/source/engine.js so the browser and the
+# verifier run byte-identical rules.
+
+[assets]
+directory = "../public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sushi48"
+database_id = "5ff9dbd6-5dc2-436a-abb8-54b731526209"
+
+# Secrets, set with `wrangler secret put <NAME>` (never in this file):
+#   JWT_SECRET           random 32+ byte string, signs auth tokens and OAuth state
+#   IP_SALT              random string, salts hashed IPs so they are not reversible
+#   GITHUB_CLIENT_ID     from the GitHub OAuth app
+#   GITHUB_CLIENT_SECRET from the GitHub OAuth app
+
+# Hourly sweep of abandoned sessions (see `scheduled` in src/index.js).
+[triggers]
+crons = ["0 * * * *"]
