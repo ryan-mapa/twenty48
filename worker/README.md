@@ -23,7 +23,15 @@ routes handle everything else:
 
 ## Deployed at
 
-<https://sushi48-leaderboard.ryan-mapa.workers.dev>
+<https://sushi48.ryan-mapa.dev>
+
+The custom domain is declared as a `[[routes]]` entry with
+`custom_domain = true`; Cloudflare manages its DNS record and certificate.
+
+**Declaring routes turns the `workers.dev` subdomain off**, so the old
+`sushi48-leaderboard.ryan-mapa.workers.dev` URL now 404s. `workers_dev = true`
+records the intent to keep it, but re-enabling it after the fact also needs the
+dashboard toggle under the Worker's Domains & Routes.
 
 The D1 database and `JWT_SECRET` / `IP_SALT` are already provisioned, and the
 database id is in `wrangler.toml`. Day to day you only need:
@@ -41,7 +49,7 @@ typing a name; signing in only makes that name owned and adds a verified tick.
 <https://console.cloud.google.com/auth/clients> (Web application):
 
 - Authorized redirect URI:
-  `https://sushi48-leaderboard.ryan-mapa.workers.dev/auth/google/callback`
+  `https://sushi48.ryan-mapa.dev/auth/google/callback`
 
 The redirect URI must match exactly — a trailing slash or `http` instead of
 `https` fails with a redirect_uri mismatch.
@@ -53,13 +61,22 @@ npx wrangler secret put GOOGLE_CLIENT_ID
 npx wrangler secret put GOOGLE_CLIENT_SECRET
 ```
 
-**3. Add test users** at <https://console.cloud.google.com/auth/audience>.
+**3. Publishing status.** While the project sits on Google's **Testing**
+status, only accounts listed under Test users at
+<https://console.cloud.google.com/auth/audience> can sign in — up to 100.
 
-This project stays on Google's **Testing** publishing status, so only accounts
-listed there can sign in — up to 100. Publishing to production requires an
-authorized domain you can prove you own, and `workers.dev` belongs to
-Cloudflare, so that is not possible without buying a domain. Anonymous posting
-is unaffected, which is why sign-in was made optional.
+Publishing to production needs an authorized domain whose ownership is proven,
+which is why `ryan-mapa.dev` was registered: `workers.dev` belongs to
+Cloudflare and can never be verified. The domain is verified in Google Search
+Console via a TXT record on the apex — **leave that record in place**, since
+Google re-checks it and un-verifies the domain if it disappears.
+
+Publishing therefore requires, on the Branding page: authorized domain
+`ryan-mapa.dev`, home page `https://sushi48.ryan-mapa.dev`, and the policy
+links `/privacy` and `/terms` (served from `../public`).
+
+Anonymous posting is unaffected by any of this, which is why sign-in was made
+optional — the leaderboard works for everyone regardless of publishing status.
 
 Testing mode expires Google *refresh* tokens after 7 days. That does not
 matter here: the code is exchanged once at sign-in and the session runs on

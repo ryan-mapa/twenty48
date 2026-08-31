@@ -2,7 +2,7 @@
 
 A sushi themed version of the popular 2048 game with leaderboard
 
-**▶ Play: https://sushi48-leaderboard.ryan-mapa.workers.dev**
+**▶ Play: https://sushi48.ryan-mapa.dev**
 
 Arrow keys on desktop, swipe on mobile. Art by
 [Robyn Hwang](https://www.robynhwang.com/).
@@ -21,10 +21,13 @@ indefinitely.
 
 ## Architecture
 
-One Cloudflare Worker serves everything. Requests matching a file in `public/`
-are served as static assets; everything else falls through to the API. One
-origin means no CORS, and auth can use an HttpOnly cookie that page scripts
-cannot read.
+One Cloudflare Worker serves everything, on the custom domain
+`sushi48.ryan-mapa.dev`. Requests matching a file in `public/` are served as
+static assets; everything else falls through to the API. One origin means no
+CORS, and auth can use an HttpOnly cookie that page scripts cannot read.
+
+Static assets are served extensionless — `/privacy` is canonical and
+`/privacy.html` redirects to it.
 
 ```
 browser ──▶ Worker ──┬─ path matches public/* → static asset
@@ -52,6 +55,7 @@ the browser.
 | `public/source/api.js` | Same-origin API calls, pending-run buffer |
 | `public/source/leaderboard.js` | Score table rendering |
 | `public/source/overlay.js` | Game-over dialog |
+| `public/privacy.html`, `public/terms.html` | Policy pages, served at `/privacy` and `/terms` |
 | `worker/src/index.js` | Routing, validation, replay, D1, OAuth, cleanup cron |
 | `worker/src/auth.js` | JWT sign/verify and salted IP hashing (Web Crypto, no deps) |
 | `test/` | Engine rules, replay determinism, DOM rendering |

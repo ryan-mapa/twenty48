@@ -12,6 +12,17 @@ compatibility_date = "2026-08-30"
 [assets]
 directory = "../public"
 
+# Custom domain. Cloudflare creates the DNS record and certificate on deploy;
+# the workers.dev URL keeps working alongside it. No client change is needed
+# because the page only ever calls its own origin.
+# Declaring routes turns the workers.dev subdomain OFF by default, which
+# silently breaks the old URL and any OAuth redirect registered against it.
+workers_dev = true
+
+[[routes]]
+pattern = "sushi48.ryan-mapa.dev"
+custom_domain = true
+
 [[d1_databases]]
 binding = "DB"
 database_name = "sushi48"

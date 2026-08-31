@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="icon" type="image/png" href="./assets/favicon.png">
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans:700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+    <title>Privacy — SUSHI48</title>
+</head>
+<body>
+    <article class="page">
+        <h1><a href="./">SUSHI<span class="red">48</span></a></h1>
+        <h2>Privacy</h2>
+        <p class="page-date">Last updated 31 August 2026</p>
+
+        <p>
+            SUSHI48 is a free browser game. It collects the minimum needed to run
+            a leaderboard, and nothing for advertising or analytics.
+        </p>
+
+        <h3>If you never sign in</h3>
+        <p>
+            You can play without giving anything. Nothing is sent anywhere while
+            you play — the game runs entirely in your browser.
+        </p>
+        <p>
+            If you choose to post a score, the following is stored: the name you
+            typed, your score, your highest tile, how many moves you made, how
+            long the game took, and the list of moves. The move list exists so
+            the server can replay your game and confirm the score is real.
+        </p>
+
+        <h3>If you sign in with Google</h3>
+        <p>
+            Signing in is optional and only lets your leaderboard name belong to
+            your account. We request the <code>openid</code> and
+            <code>profile</code> scopes, and store two things from your Google
+            profile: your account identifier and your first name.
+        </p>
+        <p>
+            <strong>We do not receive or store your email address</strong>, and
+            we never see your Google password.
+        </p>
+
+        <h3>Cookies and browser storage</h3>
+        <p>
+            Signing in sets one cookie holding your session. It is
+            <code>HttpOnly</code>, so page scripts cannot read it, and it lasts
+            30 days. There are no advertising or tracking cookies.
+        </p>
+        <p>
+            Your browser also stores, locally on your device, the last name you
+            posted under and any finished game waiting to be submitted. That
+            never leaves your device except when a score is posted.
+        </p>
+
+        <h3>Other data</h3>
+        <p>
+            When a game starts, a one-way salted hash of your IP address is
+            stored so that one person cannot start unlimited games. The address
+            itself is not stored and the hash cannot be reversed to recover it.
+        </p>
+
+        <h3>Who else sees it</h3>
+        <p>
+            Nobody. Your data is not sold, shared, or given to advertisers. It
+            is stored on Cloudflare, who host the game and process requests on
+            our behalf. Signing in involves Google, under
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">their privacy policy</a>.
+        </p>
+        <p>
+            Names and scores on the leaderboard are public — that is the point
+            of a leaderboard. Choose a name accordingly.
+        </p>
+
+        <h3>How long it is kept</h3>
+        <p>
+            Games that are started but never submitted are deleted within six
+            hours. Posted scores are kept indefinitely so the leaderboard has a
+            history.
+        </p>
+
+        <h3>Removing your data</h3>
+        <p>
+            Email <a href="mailto:hello@ryan-mapa.dev">hello@ryan-mapa.dev</a> and your
+            account and scores will be deleted. You can also revoke this app's
+            access at
+            <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">your Google account permissions</a>.
+        </p>
+
+        <h3>Children</h3>
+        <p>
+            This game is not directed at children under 13 and we do not
+            knowingly collect their data.
+        </p>
+
+        <h3>Changes</h3>
+        <p>
+            If this policy changes, the date at the top changes with it.
+        </p>
+
+        <p class="page-back"><a href="./">← Back to the game</a></p>
+    </article>
+</body>
+</html>
