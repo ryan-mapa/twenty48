@@ -65,9 +65,9 @@ a:hover {
     flex-wrap: wrap;
     gap: 14px;
     width: 100%;
-    /* Board (360) + gap (22) + leaderboard (260): keeps the header's outer
+    /* Board (360) + gap (22) + leaderboard (325): keeps the header's outer
        edges flush with the content beneath it. */
-    max-width: 642px;
+    max-width: 707px;
 }
 
 h1 {
@@ -240,8 +240,13 @@ h1 {
 /* leaderboard */
 
 .leaderboard {
-    width: 260px;
+    display: flex;
+    flex-direction: column;
+    width: 325px;
     max-width: 100%;
+    /* Match the board exactly, so the two cards share a bottom edge however
+       many scores there are. */
+    height: var(--board);
     padding: 16px 18px;
     border: 1px solid var(--line-strong);
     border-radius: 18px;
@@ -255,16 +260,19 @@ h1 {
     font-weight: 700;
     letter-spacing: 2px;
     text-align: center;
-    color: var(--muted);
+    color: var(--accent);
 }
 
 .leaderboard ol {
     counter-reset: rank;
     list-style: none;
     margin: 0;
-    padding: 0;
-    max-height: 300px;
+    /* Keeps the scrollbar clear of the score column. */
+    padding: 0 14px 0 0;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    scrollbar-width: thin;
 }
 
 .leaderboard li {
@@ -497,5 +505,15 @@ h1 {
     .leaderboard {
         width: var(--board);
         max-width: var(--board);
+    }
+
+    /* Stacked under the board, the card grows with its contents rather than
+       being pinned to the board's height. */
+    .leaderboard {
+        height: auto;
+    }
+
+    .leaderboard ol {
+        max-height: 46vh;
     }
 }

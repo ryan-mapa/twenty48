@@ -167,14 +167,9 @@ async function submitSession(request, env, sessionId) {
         )
     ]);
 
-    // Rank counts distinct identities above this score; every anonymous row
-    // is its own identity.
+    // Rank is simply how many runs beat this one.
     const { rank } = await env.DB.prepare(
-        `SELECT COUNT(*) + 1 AS rank FROM (
-             SELECT 1 FROM scores
-             WHERE ruleset_version = ? AND score > ?
-             GROUP BY COALESCE(user_id, 'anon:' || id)
-         )`
+        'SELECT COUNT(*) + 1 AS rank FROM scores WHERE ruleset_version = ? AND score > ?'
     ).bind(RULESET_VERSION, score).first();
 
     return json({ score, maxTile, rank, displayName, verified: Boolean(user) });
@@ -185,18 +180,13 @@ async function listScores(request, env) {
     const url = new URL(request.url);
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '100', 10) || 100, 100);
 
-    // Signed-in players collapse to their personal best. Anonymous rows each
-    // partition alone, so they stand on their own.
+    // Every run stands on its own: no collapsing to a personal best, so a
+    // player's earlier scores stay on the board. Matches idx_scores_rank
+    // exactly, so this is an index scan rather than a sort of the table.
     const { results } = await env.DB.prepare(
-        `SELECT display_name, score, max_tile, verified, created_at FROM (
-             SELECT display_name, score, max_tile, verified, created_at,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY COALESCE(user_id, 'anon:' || id)
-                        ORDER BY score DESC
-                    ) AS rn
-             FROM scores
-             WHERE ruleset_version = ?
-         ) WHERE rn = 1
+        `SELECT display_name, score, max_tile, verified, created_at
+         FROM scores
+         WHERE ruleset_version = ?
          ORDER BY score DESC
          LIMIT ?`
     ).bind(RULESET_VERSION, limit).all();
