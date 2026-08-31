@@ -21,7 +21,39 @@ routes handle everything else:
 | `GET` | `/auth/github/callback` | none | Finish OAuth, set the session cookie, redirect home. |
 | `POST` | `/auth/logout` | none | Clear the session cookie. |
 
-## First-time setup
+## Deployed at
+
+<https://sushi48-leaderboard.ryan-mapa.workers.dev>
+
+The D1 database and `JWT_SECRET` / `IP_SALT` are already provisioned, and the
+database id is in `wrangler.toml`. Day to day you only need:
+
+```sh
+npm run deploy
+```
+
+## Setting up GitHub sign-in
+
+Until this is done the game is fully playable but nobody can post a score.
+
+**1. Register an OAuth app** at <https://github.com/settings/developers>:
+
+- Homepage URL: `https://sushi48-leaderboard.ryan-mapa.workers.dev`
+- Callback URL: `https://sushi48-leaderboard.ryan-mapa.workers.dev/auth/github/callback`
+
+The callback must match exactly — a trailing slash or `http` instead of
+`https` will fail.
+
+**2. Set the two secrets.** They take effect immediately, no redeploy:
+
+```sh
+npx wrangler secret put GITHUB_CLIENT_ID
+npx wrangler secret put GITHUB_CLIENT_SECRET
+```
+
+## Provisioning from scratch
+
+Only needed to rebuild this in a different Cloudflare account.
 
 **1. Create the database** and paste the id it prints into `wrangler.toml`:
 
@@ -30,24 +62,19 @@ npx wrangler d1 create sushi48
 npm run schema:remote
 ```
 
-**2. Deploy once** to find out your Worker's URL:
+**2. Deploy once** to find out the Worker's URL:
 
 ```sh
 npm run deploy
 ```
 
-**3. Register a GitHub OAuth app** at
-<https://github.com/settings/developers>, using that URL:
+**3. Register the GitHub OAuth app** as above, using that URL.
 
-- Homepage URL: `https://sushi48-leaderboard.<your-subdomain>.workers.dev`
-- Callback URL: `https://sushi48-leaderboard.<your-subdomain>.workers.dev/auth/github/callback`
-
-**4. Set the secrets** (never put these in `wrangler.toml`). They take effect
-immediately — no redeploy needed:
+**4. Set all four secrets** (never put these in `wrangler.toml`):
 
 ```sh
-npx wrangler secret put JWT_SECRET            # random 32+ bytes
-npx wrangler secret put IP_SALT               # random string
+openssl rand -base64 48 | npx wrangler secret put JWT_SECRET
+openssl rand -base64 32 | npx wrangler secret put IP_SALT
 npx wrangler secret put GITHUB_CLIENT_ID
 npx wrangler secret put GITHUB_CLIENT_SECRET
 ```
@@ -65,9 +92,14 @@ npm run schema:local
 npm run dev          # game + API on http://localhost:8787
 ```
 
-OAuth will not complete locally without a real GitHub app. To exercise the
-submit path, mint a JWT with the same `JWT_SECRET` and insert a matching row
-into `users`.
+OAuth will not complete locally without a real GitHub app pointed at
+localhost. To exercise the submit path, mint an HS256 JWT with the same
+`JWT_SECRET` (payload `{ sub, name }`), insert a matching row into `users`,
+and send it as a `sushi48_session` cookie.
+
+The local and remote databases are entirely separate — `schema:local` and
+`schema:remote` touch different stores, and local scores never leave your
+machine.
 
 ## What a submission must satisfy
 
@@ -78,13 +110,15 @@ Rejected unless all of these hold:
 - `timings` is non-decreasing and the same length as `moves`
 - the run took at least 200ms per move (the client debounce is 250ms)
 - the move log replays cleanly and ends in a real game-over
-- the caller presents a valid bearer token
+- the caller presents a valid session cookie
 
 The score written is always the one this Worker computed. Any `score` field in
 the request body is ignored.
 
 ## Operational notes
 
+- Deploys are manual. Nothing in this repository triggers one; the live site
+  is whatever `wrangler deploy` last uploaded.
 - An hourly cron sweeps sessions that were minted but never submitted. Most
   sessions are abandoned, so without it the table grows without bound.
 - Sessions are minted anonymously (players sign in only to post), so the only
