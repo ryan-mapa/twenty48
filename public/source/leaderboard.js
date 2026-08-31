@@ -36,6 +36,16 @@ export default class Leaderboard {
             name.className = 'entry-name';
             name.textContent = entry.display_name;
 
+            // Every score here is replay-verified; the tick marks that the
+            // *name* is owned by an account rather than freely typed.
+            if (entry.verified) {
+                const tick = document.createElement('span');
+                tick.className = 'entry-verified';
+                tick.textContent = '✓';
+                tick.title = 'Posted from a signed-in account';
+                name.appendChild(tick);
+            }
+
             const score = document.createElement('span');
             score.className = 'entry-score';
             score.textContent = entry.score.toLocaleString();

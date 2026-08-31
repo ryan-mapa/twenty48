@@ -345,3 +345,55 @@ a {
     color: #777;
     text-align: center;
 }
+
+/* name entry + sign-in */
+
+.name-field {
+    margin: 0 0 14px;
+}
+
+.name-field label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #777;
+}
+
+.name-field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    font-family: inherit;
+    font-size: 16px;
+    text-align: center;
+    border: 3px solid red;
+    border-radius: 10px;
+    background-color: white;
+    color: black;
+}
+
+.name-field input::placeholder {
+    color: #bbb;
+    font-weight: 400;
+}
+
+.overlay-signin {
+    margin: 16px 0 0;
+    font-size: 12px;
+}
+
+.overlay-signin a {
+    color: #888;
+    text-decoration: underline;
+}
+
+.overlay-signin a:hover {
+    color: red;
+}
+
+.entry-verified {
+    margin-left: 5px;
+    font-size: 11px;
+    color: #4a9;
+}

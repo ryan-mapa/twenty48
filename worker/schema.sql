@@ -25,10 +25,15 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE INDEX IF NOT EXISTS idx_sessions_ip ON sessions (ip_hash, created_at);
 CREATE INDEX IF NOT EXISTS idx_sessions_created ON sessions (created_at);
 
+-- `user_id` is NULL for anonymous posts. `display_name` is always set: it is
+-- the account's name when signed in, and a self-chosen (unowned) name
+-- otherwise. `verified` records which of the two it was.
 CREATE TABLE IF NOT EXISTS scores (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id      TEXT NOT NULL UNIQUE REFERENCES sessions (id),
-    user_id         TEXT NOT NULL REFERENCES users (id),
+    user_id         TEXT REFERENCES users (id),
+    display_name    TEXT NOT NULL,
+    verified        INTEGER NOT NULL DEFAULT 0,
     score           INTEGER NOT NULL,
     max_tile        INTEGER NOT NULL,
     move_count      INTEGER NOT NULL,

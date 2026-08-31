@@ -34,11 +34,23 @@
         <div class="overlay-card">
             <h2>GAME OVER</h2>
             <p class="final-score">SCORE <span id="final-score">0</span></p>
+
+            <div id="name-field" class="name-field">
+                <label for="player-name">POST AS</label>
+                <input type="text" id="player-name" maxlength="20"
+                       placeholder="your name" autocomplete="nickname" spellcheck="false">
+            </div>
+
             <p id="overlay-status" class="overlay-status"></p>
+
             <div class="overlay-actions">
                 <button type="button" id="post-score" class="button">POST TO LEADERBOARD</button>
                 <button type="button" id="play-again" class="button">PLAY AGAIN</button>
             </div>
+
+            <p class="overlay-signin">
+                <a href="#" id="signin-link">or sign in with Google to claim your name</a>
+            </p>
         </div>
     </div>
 </body>
