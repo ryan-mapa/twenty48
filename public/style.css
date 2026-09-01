@@ -36,7 +36,10 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 22px;
-    min-height: 100vh;
+    /* No min-height: 100vh. It leaves dead space below the footer when the
+       content is shorter, and on phones 100vh counts the area behind the
+       address bar, so the page scrolls by that much even when it fits.
+       html paints the background, so a short page still looks right. */
     margin: 0;
     padding: 28px 18px 36px;
     background-color: var(--bg);
