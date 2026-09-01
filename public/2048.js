@@ -1,6 +1,7 @@
 import Game from './source/game.js';
 import Leaderboard from './source/leaderboard.js';
 import Overlay from './source/overlay.js';
+import createGoogleButton from './source/google-button.js';
 import {
     createSession, submitRun, fetchMe, signIn, signOut,
     savePending, loadPending, clearPending,
@@ -27,6 +28,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // control, which renders before that, can safely test it.
     let game = null;
 
+    // The overlay's sign-in control is the same branded button as the header.
+    const overlaySignIn = createGoogleButton(null);
+    document.getElementById('overlay-signin').appendChild(overlaySignIn);
+
     const overlay = new Overlay({
         root: document.getElementById('gameover'),
         score: document.getElementById('final-score'),
@@ -35,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         playAgain: document.getElementById('play-again'),
         nameField: document.getElementById('name-field'),
         nameInput: document.getElementById('player-name'),
-        signInLink: document.getElementById('signin-link')
+        signInLink: overlaySignIn
     }, { onPost: postScore, onPlayAgain: playAgain, onSignIn: startSignIn });
 
     // Shown from page load rather than only at game over, so signing in is
@@ -44,12 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         authEl.replaceChildren();
 
         if (!me.signedIn) {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'button';
-            button.textContent = 'SIGN IN';
-            button.addEventListener('click', () => startSignIn());
-            authEl.appendChild(button);
+            authEl.appendChild(createGoogleButton(() => startSignIn(), { compact: true }));
             return;
         }
 
@@ -110,8 +110,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     function startSignIn() {
         if (finishedRun && sessionId) {
             savePending(sessionId, finishedRun);
-        } else if (gameInProgress() &&
-                   !confirm('Signing in starts a new game. Continue?')) {
+        } else if (gameInProgress() && !confirm(
+            'Signing in now will start a new game.\n\n' +
+            'You do not have to sign in first — finish this game and you can ' +
+            'sign in when you post your score, without losing your progress.\n\n' +
+            'Sign in now anyway?')) {
             return;
         }
         signIn();

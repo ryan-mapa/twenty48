@@ -387,7 +387,7 @@ h1 {
 
 .overlay-card {
     width: 100%;
-    max-width: 340px;
+    max-width: 380px;
     padding: 28px 26px 22px;
     text-align: center;
     border: 1px solid var(--line-strong);
@@ -474,19 +474,69 @@ h1 {
     flex-wrap: wrap;
 }
 
-.overlay-signin {
-    margin: 18px 0 0;
+/* Slightly tighter than the header buttons so both fit on one row inside
+   the card. */
+.overlay-actions .button {
+    padding: 0 13px;
+}
+
+.overlay-signin-note {
+    margin: 20px 0 8px !important;
     font-size: 12px;
-}
-
-.overlay-signin a {
     color: var(--muted);
-    text-decoration: underline;
-    text-underline-offset: 2px;
 }
 
-.overlay-signin a:hover {
-    color: var(--accent);
+.overlay-signin {
+    display: flex;
+    justify-content: center;
+}
+
+/* Google sign-in button ---------------------------------------------------
+   Follows Google's Identity branding guidelines: their G mark unaltered,
+   the exact phrase, white surface and their neutral border. Intentionally
+   not restyled to match the rest of the page — recognisability is the point,
+   and altering it is not permitted. */
+
+.google-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 40px;
+    padding: 0 14px;
+    border: 1px solid #747775;
+    border-radius: 20px;
+    background-color: #ffffff;
+    color: #1f1f1f;
+    font-family: 'Roboto', 'Noto Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition: background-color 0.15s, box-shadow 0.15s;
+}
+
+.google-btn:hover {
+    background-color: #f7f8f8;
+    box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3);
+}
+
+.google-btn:active {
+    background-color: #eceded;
+}
+
+.google-btn-logo {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+}
+
+/* Header variant: shorter, to sit beside the score and New Game. */
+.google-btn-compact {
+    height: 36px;
+    padding: 0 12px;
+    font-size: 13px;
+    gap: 8px;
 }
 
 /* narrow screens ----------------------------------------------------------- */
