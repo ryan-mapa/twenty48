@@ -78,7 +78,9 @@ a:hover {
 .header-controls {
     display: flex;
     align-items: center;
-    gap: 8px;
+    /* Wider than the header's usual 8px: the two are unrelated controls, and
+       at 8px the circle read as part of the sign-in button. */
+    gap: 14px;
 }
 
 /* A deliberately quiet circle: smaller than the sign-in button beside it and
