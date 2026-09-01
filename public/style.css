@@ -73,6 +73,38 @@ a:hover {
     max-width: 707px;
 }
 
+/* The `?` and the sign-in control travel together as the header's right-hand
+   item, so the header stays a two-item row that space-between can lay out. */
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* A deliberately quiet circle: smaller than the sign-in button beside it and
+   drawn in the muted ink, so it never competes with the board for attention. */
+.help-button {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    background-color: var(--panel);
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.help-button:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+}
+
 /* The score and New Game sit on their own row, spanning the board they
    belong to, rather than crowding the header. */
 .board-column {
@@ -559,6 +591,33 @@ h1 {
 .overlay-signin {
     display: flex;
     justify-content: center;
+}
+
+/* how to play ------------------------------------------------------------
+   A dialog rather than anything permanently on the page: with the
+   leaderboard collapsed a small phone has about 3px of vertical slack, so a
+   panel here would put the page back into scrolling. */
+
+.howto-card {
+    /* Sentences long enough to wrap, so ranged left rather than centred. */
+    text-align: left;
+}
+
+.howto-card h2 {
+    text-align: center;
+}
+
+.howto-list {
+    margin: 0 0 22px;
+    padding: 0;
+    list-style: none;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink);
+}
+
+.howto-list li + li {
+    margin-top: 12px;
 }
 
 /* Google sign-in button ---------------------------------------------------

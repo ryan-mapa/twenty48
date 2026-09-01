@@ -20,7 +20,11 @@
             <img src="./assets/chopsticks.png" alt="" class="logo" width="170" height="176">
             <span>SUSHI<span class="red">48</span></span>
         </h1>
-        <div id="auth" class="auth"></div>
+        <div class="header-controls">
+            <button type="button" id="help" class="help-button"
+                    aria-label="How to play" aria-haspopup="dialog">?</button>
+            <div id="auth" class="auth"></div>
+        </div>
     </div>
 
     <div class="layout">
@@ -53,6 +57,22 @@
         <a href="./terms">Terms</a> ·
         <a href="https://github.com/ryan-mapa/twenty48" target="_blank" rel="noopener">Source on GitHub</a>
     </p>
+
+    <div id="howto" class="overlay" hidden>
+        <div class="overlay-card howto-card" role="dialog" aria-modal="true"
+             aria-labelledby="howto-title">
+            <h2 id="howto-title">HOW TO PLAY</h2>
+            <ul class="howto-list">
+                <li>Arrow keys, or swipe on a phone. Every move slides all the sushi as far as it will go.</li>
+                <li>Two of the same sushi merge into the next one up &mdash; that's your score.</li>
+                <li>Two uni cancel each other out for 4096 points, clearing space. There's no end!</li>
+                <li>When you have no more moves, the game ends. Post your score under any name &mdash; sign in with Google to keep that name yours.</li>
+            </ul>
+            <div class="overlay-actions">
+                <button type="button" id="howto-close" class="button">GOT IT</button>
+            </div>
+        </div>
+    </div>
 
     <div id="gameover" class="overlay" hidden>
         <div class="overlay-card">

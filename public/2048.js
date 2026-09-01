@@ -180,6 +180,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         leaderboardToggle.setAttribute('aria-expanded', String(open));
     });
 
+    // How to play. A dialog rather than anything permanently on the page: a
+    // phone has no vertical room to spare with the leaderboard collapsed.
+    const howto = document.getElementById('howto');
+    const helpButton = document.getElementById('help');
+    const howtoClose = document.getElementById('howto-close');
+
+    function setHowto(open) {
+        howto.hidden = !open;
+        (open ? howtoClose : helpButton).focus();
+    }
+
+    helpButton.addEventListener('click', () => setHowto(true));
+    howtoClose.addEventListener('click', () => setHowto(false));
+    howto.addEventListener('click', event => {
+        if (event.target === howto) setHowto(false); // the backdrop, not the card
+    });
+
+    // Capture phase on purpose. The board's own keydown listener is also on
+    // document, so stopping here is what keeps the arrows from moving tiles
+    // behind the open dialog.
+    document.addEventListener('keydown', event => {
+        if (howto.hidden) return;
+        if (event.key === 'Escape') setHowto(false);
+        event.stopPropagation();
+    }, true);
+
     me = await fetchMe();
     renderAuth();
 
