@@ -61,20 +61,34 @@ a:hover {
 .game-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 14px;
+    justify-content: space-between;
+    gap: 16px;
     width: 100%;
     /* Board (360) + gap (22) + leaderboard (325): keeps the header's outer
        edges flush with the content beneath it. */
     max-width: 707px;
 }
 
+/* Auth sits above the score and New Game, all right-aligned against the
+   wordmark on the left. */
+.header-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 h1 {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     margin: 0;
     font-size: clamp(26px, 7vw, 40px);
     line-height: 1;
@@ -347,6 +361,16 @@ h1 {
     color: var(--ink);
 }
 
+.auth-mark {
+    display: inline-flex;
+    align-items: center;
+}
+
+.auth-mark svg {
+    width: 15px;
+    height: 15px;
+}
+
 .auth-signout {
     color: var(--muted);
     text-decoration: underline;
@@ -548,30 +572,27 @@ h1 {
     }
 
     .game-header {
-        justify-content: space-between;
-        gap: 10px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
     }
 
     h1 {
-        flex: 1 1 100%;
         justify-content: center;
     }
 
-    .score-counter,
-    .button {
+    .header-controls {
+        align-items: stretch;
+    }
+
+    .auth {
+        justify-content: center;
+    }
+
+    .header-actions .score-counter,
+    .header-actions .button {
         flex: 1 1 0;
         height: 48px;
-    }
-
-    /* Third item in the header row: give it its own line rather than
-       squeezing the score and button. */
-    .auth {
-        flex: 1 1 100%;
-        justify-content: center;
-    }
-
-    .auth .button {
-        flex: 0 0 auto;
     }
 
     /* Keep the score and button inside the board's footprint rather than

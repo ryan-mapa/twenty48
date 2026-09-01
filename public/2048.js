@@ -1,7 +1,7 @@
 import Game from './source/game.js';
 import Leaderboard from './source/leaderboard.js';
 import Overlay from './source/overlay.js';
-import createGoogleButton from './source/google-button.js';
+import createGoogleButton, { createGoogleMark } from './source/google-button.js';
 import {
     createSession, submitRun, fetchMe, signIn, signOut,
     savePending, loadPending, clearPending,
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             signOut();
         });
 
-        authEl.append(name, link);
+        authEl.append(createGoogleMark(), name, link);
     }
 
     // Signing in navigates away, which loses an unfinished board. Only worth

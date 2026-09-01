@@ -14,6 +14,15 @@ const G_LOGO = `
     <path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/>
 </svg>`;
 
+// The G mark on its own, for indicating an active Google session next to the
+// player's name. Same unaltered artwork as the button uses.
+export function createGoogleMark() {
+    const span = document.createElement('span');
+    span.className = 'auth-mark';
+    span.innerHTML = G_LOGO;
+    return span;
+}
+
 // `onClick` is optional: callers that own the button's behaviour elsewhere
 // (the overlay wires its own controls) pass null and bind it themselves.
 export default function createGoogleButton(onClick, { compact = false } = {}) {

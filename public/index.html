@@ -20,9 +20,13 @@
             <img src="./assets/chopsticks.png" alt="" class="logo" width="170" height="176">
             <span>SUSHI<span class="red">48</span></span>
         </h1>
-        <div class="score-counter"><div>SCORE</div><div id="score">0</div></div>
-        <button type="button" id="restart" class="button">NEW GAME</button>
-        <div id="auth" class="auth"></div>
+        <div class="header-controls">
+            <div id="auth" class="auth"></div>
+            <div class="header-actions">
+                <div class="score-counter"><div>SCORE</div><div id="score">0</div></div>
+                <button type="button" id="restart" class="button">NEW GAME</button>
+            </div>
+        </div>
     </div>
 
     <div class="layout">
@@ -36,7 +40,11 @@
     </div>
 
     <h3 class="footer">Art by:&nbsp<a target='_blank' href="https://www.robynhwang.com/">Robyn Hwang</a></h3>
-    <p class="footer-links"><a href="./privacy">Privacy</a> · <a href="./terms">Terms</a></p>
+    <p class="footer-links">
+        <a href="./privacy">Privacy</a> ·
+        <a href="./terms">Terms</a> ·
+        <a href="https://github.com/ryan-mapa/twenty48" target="_blank" rel="noopener">Source on GitHub</a>
+    </p>
 
     <div id="gameover" class="overlay" hidden>
         <div class="overlay-card">
