@@ -10,7 +10,7 @@ import {
 document.addEventListener('DOMContentLoaded', async () => {
     const rootEl = document.getElementById('g2048');
     const scoreEl = document.getElementById('score');
-    const accountEl = document.getElementById('account');
+    const authEl = document.getElementById('auth');
 
     const leaderboard = new Leaderboard(
         document.getElementById('leaderboard-list'),
@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     let sessionId = null;
     let finishedRun = null;
     let me = { signedIn: false };
+    // Assigned once the first session is minted. Declared here so the auth
+    // control, which renders before that, can safely test it.
+    let game = null;
 
     const overlay = new Overlay({
         root: document.getElementById('gameover'),
@@ -35,20 +38,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         signInLink: document.getElementById('signin-link')
     }, { onPost: postScore, onPlayAgain: playAgain, onSignIn: startSignIn });
 
-    function renderAccount() {
-        accountEl.replaceChildren();
-        if (!me.signedIn) return;
+    // Shown from page load rather than only at game over, so signing in is
+    // discoverable before a score is on the line.
+    function renderAuth() {
+        authEl.replaceChildren();
 
-        accountEl.append(`${me.name} · `);
+        if (!me.signedIn) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'button';
+            button.textContent = 'SIGN IN';
+            button.addEventListener('click', () => startSignIn());
+            authEl.appendChild(button);
+            return;
+        }
+
+        const name = document.createElement('span');
+        name.className = 'auth-name';
+        name.textContent = me.name;
 
         const link = document.createElement('a');
         link.href = '#';
+        link.className = 'auth-signout';
         link.textContent = 'sign out';
         link.addEventListener('click', event => {
             event.preventDefault();
             signOut();
         });
-        accountEl.appendChild(link);
+
+        authEl.append(name, link);
+    }
+
+    // Signing in navigates away, which loses an unfinished board. Only worth
+    // interrupting for if there is actually something to lose.
+    function gameInProgress() {
+        return game && !game.engine.over && game.run().moveCount > 0;
     }
 
     async function newSession() {
@@ -81,10 +105,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Signing in mid-overlay: buffer the run first so it survives the round
-    // trip to Google and posts automatically on return.
+    // Buffer any finished run first so it survives the round trip to Google
+    // and posts automatically on return.
     function startSignIn() {
-        if (finishedRun && sessionId) savePending(sessionId, finishedRun);
+        if (finishedRun && sessionId) {
+            savePending(sessionId, finishedRun);
+        } else if (gameInProgress() &&
+                   !confirm('Signing in starts a new game. Continue?')) {
+            return;
+        }
         signIn();
     }
 
@@ -140,9 +169,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('restart').addEventListener('click', playAgain);
 
     me = await fetchMe();
-    renderAccount();
+    renderAuth();
 
-    const game = new Game(rootEl, scoreEl, { seed: await newSession(), onGameOver });
+    game = new Game(rootEl, scoreEl, { seed: await newSession(), onGameOver });
 
     // ?auth=ok means we just came back from GitHub, so there is very likely a
     // buffered run waiting to go out.

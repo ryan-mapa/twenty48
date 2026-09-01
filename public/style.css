@@ -327,20 +327,34 @@ h1 {
     text-align: center;
 }
 
-/* These two are populated conditionally; empty ones would otherwise leave a
-   stray gap and a dangling divider in the card. */
-.leaderboard-status:empty,
-.account:empty {
+/* Populated conditionally; an empty one would leave a stray gap in the card. */
+.leaderboard-status:empty {
     display: none;
 }
 
-.account {
-    margin: 12px 0 0;
-    padding-top: 12px;
-    border-top: 1px solid var(--line);
+/* auth control, in the header */
+
+.auth {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: 12px;
     color: var(--muted);
-    text-align: center;
+}
+
+.auth-name {
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.auth-signout {
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.auth-signout:hover {
+    color: var(--accent);
 }
 
 /* footer */
@@ -497,6 +511,17 @@ h1 {
     .button {
         flex: 1 1 0;
         height: 48px;
+    }
+
+    /* Third item in the header row: give it its own line rather than
+       squeezing the score and button. */
+    .auth {
+        flex: 1 1 100%;
+        justify-content: center;
+    }
+
+    .auth .button {
+        flex: 0 0 auto;
     }
 
     /* Keep the score and button inside the board's footprint rather than
