@@ -1,6 +1,7 @@
 import Game from './source/game.js';
 import Leaderboard from './source/leaderboard.js';
 import Overlay from './source/overlay.js';
+import createGoogleButton, { createGoogleMark } from './source/google-button.js';
 import {
     createSession, submitRun, fetchMe, signIn, signOut,
     savePending, loadPending, clearPending,
@@ -10,7 +11,7 @@ import {
 document.addEventListener('DOMContentLoaded', async () => {
     const rootEl = document.getElementById('g2048');
     const scoreEl = document.getElementById('score');
-    const accountEl = document.getElementById('account');
+    const authEl = document.getElementById('auth');
 
     const leaderboard = new Leaderboard(
         document.getElementById('leaderboard-list'),
@@ -23,6 +24,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     let sessionId = null;
     let finishedRun = null;
     let me = { signedIn: false };
+    // Assigned once the first session is minted. Declared here so the auth
+    // control, which renders before that, can safely test it.
+    let game = null;
+
+    // The overlay's sign-in control is the same branded button as the header.
+    const overlaySignIn = createGoogleButton(null);
+    document.getElementById('overlay-signin').appendChild(overlaySignIn);
 
     const overlay = new Overlay({
         root: document.getElementById('gameover'),
@@ -32,23 +40,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         playAgain: document.getElementById('play-again'),
         nameField: document.getElementById('name-field'),
         nameInput: document.getElementById('player-name'),
-        signInLink: document.getElementById('signin-link')
+        signInLink: overlaySignIn
     }, { onPost: postScore, onPlayAgain: playAgain, onSignIn: startSignIn });
 
-    function renderAccount() {
-        accountEl.replaceChildren();
-        if (!me.signedIn) return;
+    // Shown from page load rather than only at game over, so signing in is
+    // discoverable before a score is on the line.
+    function renderAuth() {
+        authEl.replaceChildren();
 
-        accountEl.append(`${me.name} · `);
+        if (!me.signedIn) {
+            authEl.appendChild(createGoogleButton(() => startSignIn(), { compact: true }));
+            return;
+        }
+
+        const name = document.createElement('span');
+        name.className = 'auth-name';
+        name.textContent = me.name;
 
         const link = document.createElement('a');
         link.href = '#';
+        link.className = 'auth-signout';
         link.textContent = 'sign out';
         link.addEventListener('click', event => {
             event.preventDefault();
             signOut();
         });
-        accountEl.appendChild(link);
+
+        authEl.append(createGoogleMark(), name, link);
+    }
+
+    // Signing in navigates away, which loses an unfinished board. Only worth
+    // interrupting for if there is actually something to lose.
+    function gameInProgress() {
+        return game && !game.engine.over && game.run().moveCount > 0;
     }
 
     async function newSession() {
@@ -81,10 +105,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Signing in mid-overlay: buffer the run first so it survives the round
-    // trip to Google and posts automatically on return.
+    // Buffer any finished run first so it survives the round trip to Google
+    // and posts automatically on return.
     function startSignIn() {
-        if (finishedRun && sessionId) savePending(sessionId, finishedRun);
+        if (finishedRun && sessionId) {
+            savePending(sessionId, finishedRun);
+        } else if (gameInProgress() && !confirm(
+            'Signing in now will start a new game.\n\n' +
+            'You do not have to sign in first — finish this game and you can ' +
+            'sign in when you post your score, without losing your progress.\n\n' +
+            'Sign in now anyway?')) {
+            return;
+        }
         signIn();
     }
 
@@ -139,10 +171,45 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('restart').addEventListener('click', playAgain);
 
-    me = await fetchMe();
-    renderAccount();
+    // Narrow screens start with the leaderboard collapsed; the control is
+    // inert on wide ones, where CSS keeps the body open regardless.
+    const leaderboardToggle = document.getElementById('leaderboard-toggle');
+    const leaderboardCard = document.querySelector('.leaderboard');
+    leaderboardToggle.addEventListener('click', () => {
+        const open = leaderboardCard.classList.toggle('is-open');
+        leaderboardToggle.setAttribute('aria-expanded', String(open));
+    });
 
-    const game = new Game(rootEl, scoreEl, { seed: await newSession(), onGameOver });
+    // How to play. A dialog rather than anything permanently on the page: a
+    // phone has no vertical room to spare with the leaderboard collapsed.
+    const howto = document.getElementById('howto');
+    const helpButton = document.getElementById('help');
+    const howtoClose = document.getElementById('howto-close');
+
+    function setHowto(open) {
+        howto.hidden = !open;
+        (open ? howtoClose : helpButton).focus();
+    }
+
+    helpButton.addEventListener('click', () => setHowto(true));
+    howtoClose.addEventListener('click', () => setHowto(false));
+    howto.addEventListener('click', event => {
+        if (event.target === howto) setHowto(false); // the backdrop, not the card
+    });
+
+    // Capture phase on purpose. The board's own keydown listener is also on
+    // document, so stopping here is what keeps the arrows from moving tiles
+    // behind the open dialog.
+    document.addEventListener('keydown', event => {
+        if (howto.hidden) return;
+        if (event.key === 'Escape') setHowto(false);
+        event.stopPropagation();
+    }, true);
+
+    me = await fetchMe();
+    renderAuth();
+
+    game = new Game(rootEl, scoreEl, { seed: await newSession(), onGameOver });
 
     // ?auth=ok means we just came back from GitHub, so there is very likely a
     // buffered run waiting to go out.

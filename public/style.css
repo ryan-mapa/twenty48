@@ -36,13 +36,17 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 22px;
-    min-height: 100vh;
+    /* No min-height: 100vh. It leaves dead space below the footer when the
+       content is shorter, and on phones 100vh counts the area behind the
+       address bar, so the page scrolls by that much even when it fits.
+       html paints the background, so a short page still looks right. */
     margin: 0;
     padding: 28px 18px 36px;
     background-color: var(--bg);
     color: var(--ink);
     font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-text-size-adjust: 100%;
+    overscroll-behavior-y: contain;
 }
 
 a {
@@ -61,20 +65,78 @@ a:hover {
 .game-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 14px;
+    justify-content: space-between;
+    gap: 16px;
     width: 100%;
     /* Board (360) + gap (22) + leaderboard (325): keeps the header's outer
        edges flush with the content beneath it. */
     max-width: 707px;
 }
 
+/* The `?` and the sign-in control travel together as the header's right-hand
+   item, so the header stays a two-item row that space-between can lay out. */
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* A deliberately quiet circle: smaller than the sign-in button beside it and
+   drawn in the muted ink, so it never competes with the board for attention. */
+.help-button {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    background-color: var(--panel);
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.help-button:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+}
+
+/* The score and New Game sit on their own row, spanning the board they
+   belong to, rather than crowding the header. */
+.board-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.board-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: var(--board);
+}
+
+/* Both halves share the board's width evenly, the same treatment they get
+   on a phone. */
+.board-bar .score-counter,
+.board-bar .button {
+    /* An explicit half rather than flex: 1 1 0 — the two have different
+       horizontal padding, and flex sizing let that difference through. */
+    flex: 0 0 auto;
+    width: calc((100% - 12px) / 2);
+    min-width: 0;
+    height: 54px;
+}
+
 h1 {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     margin: 0;
     font-size: clamp(26px, 7vw, 40px);
     line-height: 1;
@@ -240,6 +302,7 @@ h1 {
 /* leaderboard */
 
 .leaderboard {
+    align-self: flex-end;
     display: flex;
     flex-direction: column;
     width: 325px;
@@ -257,10 +320,39 @@ h1 {
 .leaderboard h2 {
     margin: 0 0 12px;
     font-size: 12px;
+}
+
+/* A heading on wide screens, a disclosure control on narrow ones. */
+.leaderboard-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 2px;
-    text-align: center;
-    color: var(--accent);
+    cursor: default;
+}
+
+.leaderboard-chevron {
+    display: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid currentColor;
+    transition: transform 0.15s;
+}
+
+.leaderboard-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
 .leaderboard ol {
@@ -327,20 +419,44 @@ h1 {
     text-align: center;
 }
 
-/* These two are populated conditionally; empty ones would otherwise leave a
-   stray gap and a dangling divider in the card. */
-.leaderboard-status:empty,
-.account:empty {
+/* Populated conditionally; an empty one would leave a stray gap in the card. */
+.leaderboard-status:empty {
     display: none;
 }
 
-.account {
-    margin: 12px 0 0;
-    padding-top: 12px;
-    border-top: 1px solid var(--line);
+/* auth control, in the header */
+
+.auth {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: 12px;
     color: var(--muted);
-    text-align: center;
+}
+
+.auth-name {
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.auth-mark {
+    display: inline-flex;
+    align-items: center;
+}
+
+.auth-mark svg {
+    width: 15px;
+    height: 15px;
+}
+
+.auth-signout {
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.auth-signout:hover {
+    color: var(--accent);
 }
 
 /* footer */
@@ -373,7 +489,7 @@ h1 {
 
 .overlay-card {
     width: 100%;
-    max-width: 340px;
+    max-width: 380px;
     padding: 28px 26px 22px;
     text-align: center;
     border: 1px solid var(--line-strong);
@@ -460,43 +576,181 @@ h1 {
     flex-wrap: wrap;
 }
 
-.overlay-signin {
-    margin: 18px 0 0;
+/* Slightly tighter than the header buttons so both fit on one row inside
+   the card. */
+.overlay-actions .button {
+    padding: 0 13px;
+}
+
+.overlay-signin-note {
+    margin: 20px 0 8px !important;
     font-size: 12px;
-}
-
-.overlay-signin a {
     color: var(--muted);
-    text-decoration: underline;
-    text-underline-offset: 2px;
 }
 
-.overlay-signin a:hover {
-    color: var(--accent);
+.overlay-signin {
+    display: flex;
+    justify-content: center;
+}
+
+/* how to play ------------------------------------------------------------
+   A dialog rather than anything permanently on the page: with the
+   leaderboard collapsed a small phone has about 3px of vertical slack, so a
+   panel here would put the page back into scrolling. */
+
+.howto-card {
+    /* Sentences long enough to wrap, so ranged left rather than centred. */
+    text-align: left;
+}
+
+.howto-card h2 {
+    text-align: center;
+}
+
+.howto-list {
+    margin: 0 0 22px;
+    padding: 0;
+    list-style: none;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink);
+}
+
+.howto-list li + li {
+    margin-top: 12px;
+}
+
+/* Google sign-in button ---------------------------------------------------
+   Follows Google's Identity branding guidelines: their G mark unaltered,
+   the exact phrase, white surface and their neutral border. Intentionally
+   not restyled to match the rest of the page — recognisability is the point,
+   and altering it is not permitted. */
+
+.google-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 40px;
+    padding: 0 14px;
+    border: 1px solid #747775;
+    border-radius: 20px;
+    background-color: #ffffff;
+    color: #1f1f1f;
+    font-family: 'Roboto', 'Noto Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition: background-color 0.15s, box-shadow 0.15s;
+}
+
+.google-btn:hover {
+    background-color: #f7f8f8;
+    box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3);
+}
+
+.google-btn:active {
+    background-color: #eceded;
+}
+
+.google-btn-logo {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+}
+
+/* Header variant: shorter, to sit beside the score and New Game. */
+.google-btn-compact {
+    height: 36px;
+    padding: 0 12px;
+    font-size: 13px;
+    gap: 8px;
 }
 
 /* narrow screens ----------------------------------------------------------- */
 
 @media (max-width: 700px) {
+    /* Tight enough that the page fits a small phone screen with the
+       leaderboard collapsed — the point of collapsing it. */
     body {
-        gap: 18px;
-        padding: 18px 14px 28px;
+        gap: 12px;
+        padding: 10px 14px 12px;
     }
 
-    .game-header {
-        justify-content: space-between;
+    .layout {
+        gap: 14px;
+    }
+
+    .board-column {
         gap: 10px;
     }
 
+    .footer {
+        font-size: 11px;
+    }
+
+    .footer-links {
+        margin-top: -8px;
+        font-size: 11px;
+    }
+
+    .game-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
     h1 {
-        flex: 1 1 100%;
         justify-content: center;
     }
 
-    .score-counter,
-    .button {
-        flex: 1 1 0;
+    .auth {
+        justify-content: center;
+    }
+
+    .board-bar .score-counter,
+    .board-bar .button {
         height: 48px;
+    }
+
+    /* Stacked, so nothing to align a bottom edge against. */
+    .leaderboard {
+        align-self: auto;
+        height: auto;
+    }
+
+    /* Collapsed by default so the page fits one screen. A taller page means
+       a swipe starting just off the board scrolls it instead. */
+    .leaderboard-toggle {
+        cursor: pointer;
+        padding: 2px 0;
+    }
+
+    .leaderboard-chevron {
+        display: inline-block;
+    }
+
+    /* Keyed off a class on the container: the button lives inside an h2, so
+       the body is not its sibling and a sibling selector cannot reach it. */
+    .leaderboard-body {
+        display: none;
+    }
+
+    .leaderboard.is-open .leaderboard-body {
+        display: flex;
+    }
+
+    .leaderboard.is-open .leaderboard-chevron {
+        transform: rotate(180deg);
+    }
+
+    .leaderboard h2 {
+        margin: 0;
+    }
+
+    .leaderboard.is-open h2 {
+        margin-bottom: 10px;
     }
 
     /* Keep the score and button inside the board's footprint rather than

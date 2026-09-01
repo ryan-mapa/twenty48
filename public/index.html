@@ -20,23 +20,59 @@
             <img src="./assets/chopsticks.png" alt="" class="logo" width="170" height="176">
             <span>SUSHI<span class="red">48</span></span>
         </h1>
-        <div class="score-counter"><div>SCORE</div><div id="score">0</div></div>
-        <button type="button" id="restart" class="button">NEW GAME</button>
+        <div class="header-controls">
+            <button type="button" id="help" class="help-button"
+                    aria-label="How to play" aria-haspopup="dialog">?</button>
+            <div id="auth" class="auth"></div>
+        </div>
     </div>
 
     <div class="layout">
-        <div id='g2048'></div>
+        <div class="board-column">
+            <div class="board-bar">
+                <div class="score-counter"><div>SCORE</div><div id="score">0</div></div>
+                <button type="button" id="restart" class="button">NEW GAME</button>
+            </div>
+            <div id='g2048'></div>
+        </div>
 
         <aside class="leaderboard">
-            <h2>LEADERBOARD</h2>
-            <p id="leaderboard-status" class="leaderboard-status">Loading…</p>
-            <ol id="leaderboard-list"></ol>
-            <p id="account" class="account"></p>
+            <h2>
+                <button type="button" id="leaderboard-toggle" class="leaderboard-toggle"
+                        aria-expanded="false" aria-controls="leaderboard-body">
+                    <span>LEADERBOARD</span>
+                    <span class="leaderboard-chevron" aria-hidden="true"></span>
+                </button>
+            </h2>
+            <div class="leaderboard-body" id="leaderboard-body">
+                <p id="leaderboard-status" class="leaderboard-status">Loading…</p>
+                <ol id="leaderboard-list"></ol>
+            </div>
         </aside>
     </div>
 
     <h3 class="footer">Art by:&nbsp<a target='_blank' href="https://www.robynhwang.com/">Robyn Hwang</a></h3>
-    <p class="footer-links"><a href="./privacy">Privacy</a> · <a href="./terms">Terms</a></p>
+    <p class="footer-links">
+        <a href="./privacy">Privacy</a> ·
+        <a href="./terms">Terms</a> ·
+        <a href="https://github.com/ryan-mapa/twenty48" target="_blank" rel="noopener">Source on GitHub</a>
+    </p>
+
+    <div id="howto" class="overlay" hidden>
+        <div class="overlay-card howto-card" role="dialog" aria-modal="true"
+             aria-labelledby="howto-title">
+            <h2 id="howto-title">HOW TO PLAY</h2>
+            <ul class="howto-list">
+                <li>Arrow keys, or swipe on a phone. Every move slides all the sushi as far as it will go.</li>
+                <li>Two of the same sushi merge into the next one up &mdash; that's your score.</li>
+                <li>Two uni cancel each other out for 4096 points, clearing space. There's no end!</li>
+                <li>When you have no more moves, the game ends. Post your score under any name &mdash; sign in with Google to keep that name yours.</li>
+            </ul>
+            <div class="overlay-actions">
+                <button type="button" id="howto-close" class="button">GOT IT</button>
+            </div>
+        </div>
+    </div>
 
     <div id="gameover" class="overlay" hidden>
         <div class="overlay-card">
@@ -56,9 +92,8 @@
                 <button type="button" id="play-again" class="button">PLAY AGAIN</button>
             </div>
 
-            <p class="overlay-signin">
-                <a href="#" id="signin-link">or sign in with Google to claim your name</a>
-            </p>
+            <p class="overlay-signin-note">or claim your name</p>
+            <div class="overlay-signin" id="overlay-signin"></div>
         </div>
     </div>
 </body>
