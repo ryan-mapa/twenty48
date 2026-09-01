@@ -80,9 +80,20 @@ a:hover {
 .board-bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 12px;
     width: var(--board);
+}
+
+/* Both halves share the board's width evenly, the same treatment they get
+   on a phone. */
+.board-bar .score-counter,
+.board-bar .button {
+    /* An explicit half rather than flex: 1 1 0 — the two have different
+       horizontal padding, and flex sizing let that difference through. */
+    flex: 0 0 auto;
+    width: calc((100% - 12px) / 2);
+    min-width: 0;
+    height: 54px;
 }
 
 h1 {
@@ -589,7 +600,6 @@ h1 {
 
     .board-bar .score-counter,
     .board-bar .button {
-        flex: 1 1 0;
         height: 48px;
     }
 
