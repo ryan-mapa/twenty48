@@ -69,19 +69,20 @@ a:hover {
     max-width: 707px;
 }
 
-/* Auth sits above the score and New Game, all right-aligned against the
-   wordmark on the left. */
-.header-controls {
+/* The score and New Game sit on their own row, spanning the board they
+   belong to, rather than crowding the header. */
+.board-column {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: 10px;
+    gap: 12px;
 }
 
-.header-actions {
+.board-bar {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
+    width: var(--board);
 }
 
 h1 {
@@ -254,6 +255,7 @@ h1 {
 /* leaderboard */
 
 .leaderboard {
+    align-self: flex-end;
     display: flex;
     flex-direction: column;
     width: 325px;
@@ -573,7 +575,7 @@ h1 {
 
     .game-header {
         flex-direction: column;
-        align-items: stretch;
+        align-items: center;
         gap: 12px;
     }
 
@@ -581,18 +583,20 @@ h1 {
         justify-content: center;
     }
 
-    .header-controls {
-        align-items: stretch;
-    }
-
     .auth {
         justify-content: center;
     }
 
-    .header-actions .score-counter,
-    .header-actions .button {
+    .board-bar .score-counter,
+    .board-bar .button {
         flex: 1 1 0;
         height: 48px;
+    }
+
+    /* Stacked, so nothing to align a bottom edge against. */
+    .leaderboard {
+        align-self: auto;
+        height: auto;
     }
 
     /* Keep the score and button inside the board's footprint rather than

@@ -20,17 +20,17 @@
             <img src="./assets/chopsticks.png" alt="" class="logo" width="170" height="176">
             <span>SUSHI<span class="red">48</span></span>
         </h1>
-        <div class="header-controls">
-            <div id="auth" class="auth"></div>
-            <div class="header-actions">
-                <div class="score-counter"><div>SCORE</div><div id="score">0</div></div>
-                <button type="button" id="restart" class="button">NEW GAME</button>
-            </div>
-        </div>
+        <div id="auth" class="auth"></div>
     </div>
 
     <div class="layout">
-        <div id='g2048'></div>
+        <div class="board-column">
+            <div class="board-bar">
+                <div class="score-counter"><div>SCORE</div><div id="score">0</div></div>
+                <button type="button" id="restart" class="button">NEW GAME</button>
+            </div>
+            <div id='g2048'></div>
+        </div>
 
         <aside class="leaderboard">
             <h2>LEADERBOARD</h2>
