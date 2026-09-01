@@ -171,6 +171,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('restart').addEventListener('click', playAgain);
 
+    // Narrow screens start with the leaderboard collapsed; the control is
+    // inert on wide ones, where CSS keeps the body open regardless.
+    const leaderboardToggle = document.getElementById('leaderboard-toggle');
+    const leaderboardCard = document.querySelector('.leaderboard');
+    leaderboardToggle.addEventListener('click', () => {
+        const open = leaderboardCard.classList.toggle('is-open');
+        leaderboardToggle.setAttribute('aria-expanded', String(open));
+    });
+
     me = await fetchMe();
     renderAuth();
 

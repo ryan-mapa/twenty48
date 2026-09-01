@@ -33,9 +33,17 @@
         </div>
 
         <aside class="leaderboard">
-            <h2>LEADERBOARD</h2>
-            <p id="leaderboard-status" class="leaderboard-status">Loading…</p>
-            <ol id="leaderboard-list"></ol>
+            <h2>
+                <button type="button" id="leaderboard-toggle" class="leaderboard-toggle"
+                        aria-expanded="false" aria-controls="leaderboard-body">
+                    <span>LEADERBOARD</span>
+                    <span class="leaderboard-chevron" aria-hidden="true"></span>
+                </button>
+            </h2>
+            <div class="leaderboard-body" id="leaderboard-body">
+                <p id="leaderboard-status" class="leaderboard-status">Loading…</p>
+                <ol id="leaderboard-list"></ol>
+            </div>
         </aside>
     </div>
 

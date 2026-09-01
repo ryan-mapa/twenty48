@@ -43,6 +43,7 @@ body {
     color: var(--ink);
     font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-text-size-adjust: 100%;
+    overscroll-behavior-y: contain;
 }
 
 a {
@@ -284,10 +285,39 @@ h1 {
 .leaderboard h2 {
     margin: 0 0 12px;
     font-size: 12px;
+}
+
+/* A heading on wide screens, a disclosure control on narrow ones. */
+.leaderboard-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 2px;
-    text-align: center;
-    color: var(--accent);
+    cursor: default;
+}
+
+.leaderboard-chevron {
+    display: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid currentColor;
+    transition: transform 0.15s;
+}
+
+.leaderboard-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
 .leaderboard ol {
@@ -579,9 +609,28 @@ h1 {
 /* narrow screens ----------------------------------------------------------- */
 
 @media (max-width: 700px) {
+    /* Tight enough that the page fits a small phone screen with the
+       leaderboard collapsed — the point of collapsing it. */
     body {
-        gap: 18px;
-        padding: 18px 14px 28px;
+        gap: 12px;
+        padding: 10px 14px 12px;
+    }
+
+    .layout {
+        gap: 14px;
+    }
+
+    .board-column {
+        gap: 10px;
+    }
+
+    .footer {
+        font-size: 11px;
+    }
+
+    .footer-links {
+        margin-top: -8px;
+        font-size: 11px;
     }
 
     .game-header {
@@ -607,6 +656,39 @@ h1 {
     .leaderboard {
         align-self: auto;
         height: auto;
+    }
+
+    /* Collapsed by default so the page fits one screen. A taller page means
+       a swipe starting just off the board scrolls it instead. */
+    .leaderboard-toggle {
+        cursor: pointer;
+        padding: 2px 0;
+    }
+
+    .leaderboard-chevron {
+        display: inline-block;
+    }
+
+    /* Keyed off a class on the container: the button lives inside an h2, so
+       the body is not its sibling and a sibling selector cannot reach it. */
+    .leaderboard-body {
+        display: none;
+    }
+
+    .leaderboard.is-open .leaderboard-body {
+        display: flex;
+    }
+
+    .leaderboard.is-open .leaderboard-chevron {
+        transform: rotate(180deg);
+    }
+
+    .leaderboard h2 {
+        margin: 0;
+    }
+
+    .leaderboard.is-open h2 {
+        margin-bottom: 10px;
     }
 
     /* Keep the score and button inside the board's footprint rather than
