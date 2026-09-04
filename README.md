@@ -5,6 +5,10 @@ cheat.
 
 **▶ Play: https://sushi48.ryan-mapa.dev**
 
+<p align="center">
+  <img src="docs/screenshot.png" alt="A game of SUSHI48 in progress beside the leaderboard" width="740">
+</p>
+
 ![The sushi chain, from a single maki roll up to nigiri-uni](docs/chain.png)
 
 Arrow keys on desktop, swipe on a phone. Combine matching sushi to climb the
