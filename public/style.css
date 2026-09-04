@@ -91,9 +91,20 @@ a:hover {
     gap: 14px;
 }
 
-/* A deliberately quiet circle: smaller than the sign-in button beside it and
-   drawn in the muted ink, so it never competes with the board for attention. */
-.help-button {
+/* The two circles group together, tighter than the gap that separates them
+   from the sign-in button. */
+.icon-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Deliberately quiet circles: smaller than the sign-in button beside them and
+   drawn in the muted ink, so they never compete with the board for attention. */
+.icon-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex: 0 0 auto;
     width: 32px;
     height: 32px;
@@ -110,7 +121,7 @@ a:hover {
     transition: color 0.15s, border-color 0.15s;
 }
 
-.help-button:hover {
+.icon-button:hover {
     border-color: var(--accent);
     color: var(--ink);
 }
@@ -596,6 +607,31 @@ h1 {
 .overlay-signin {
     display: flex;
     justify-content: center;
+}
+
+/* toast -------------------------------------------------------------------
+   Confirms a copy when there is no share sheet to confirm it for us. */
+
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    z-index: 20;
+    transform: translateX(-50%);
+    margin: 0;
+    padding: 10px 18px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background-color: var(--panel-solid);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: var(--shadow);
+}
+
+.toast[hidden] {
+    display: none;
 }
 
 /* how to play ------------------------------------------------------------
