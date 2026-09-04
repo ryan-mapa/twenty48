@@ -10,14 +10,22 @@ import mulberry32 from './rng.js';
 export const RULESET_VERSION = 2;
 export const SIZE = 4;
 
+// Every ruleset this game has ever been played under, kept so that a run can
+// always be replayed by the rules it was actually played by. A session that
+// began before a rules change is still verifiable afterwards; dropping an
+// entry here would strand every score recorded under it.
+//
+// Rulesets have only ever differed in where the chain stops.
+export const RULESETS = {
+    1: { cap: 2048 },   // uni was the top tile
+    2: { cap: 4096 }    // the pair of toro went in at 2048, pushing uni up
+};
+
 // The sushi art stops at nigiri-uni, so 4096 is the highest tile that can
 // exist. A matching pair at the cap is eaten instead of promoted: both cells
 // clear and the merge still pays 2x the tile value. Freeing two cells at the
 // top end is what makes endless play possible.
-//
-// This was 2048 under ruleset 1, when uni was the top tile. Adding the pair
-// of toro at 2048 pushed uni up a rung, so the cap moved with it.
-export const CAP = 4096;
+export const CAP = RULESETS[RULESET_VERSION].cap;
 export const DIRECTIONS = ['up', 'down', 'left', 'right'];
 
 export const MOVE_CHARS = { up: 'U', down: 'D', left: 'L', right: 'R' };
@@ -37,7 +45,7 @@ function coord(dir, line, slot) {
 // Canonical 2048: tiles compact toward slot 0, each tile merges at most once
 // per move, and a merge awards the resulting value. The one deviation is the
 // cap (see CAP above). Exported for tests.
-export function slide(line) {
+export function slide(line, cap = CAP) {
     const values = line.filter(v => v !== 0);
     const result = [];
     // Slots where something combined, so the renderer can animate it rather
@@ -51,7 +59,7 @@ export function slide(line) {
             const merged = values[i] * 2;
             points += merged;
             // Below the cap the pair becomes one tile; at the cap it vanishes.
-            if (values[i] < CAP) {
+            if (values[i] < cap) {
                 merges.push(result.length);
                 result.push(merged);
             } else {
@@ -75,7 +83,10 @@ export function slide(line) {
 }
 
 export default class Engine {
-    constructor(seed) {
+    // `cap` is the only thing a ruleset changes, so it is the only thing an
+    // older replay needs to be handed.
+    constructor(seed, { cap = CAP } = {}) {
+        this.cap = cap;
         this.rand = mulberry32(seed);
         this.grid = Array.from({ length: SIZE }, () => new Array(SIZE).fill(0));
         this.score = 0;
@@ -120,7 +131,7 @@ export default class Engine {
                 before.push(this.grid[r][c]);
             }
 
-            const after = slide(before);
+            const after = slide(before, this.cap);
             points += after.points;
 
             if (after.moved) {
@@ -169,8 +180,11 @@ export default class Engine {
 
 // Replays an encoded move log against a seed. The Worker's only entry point:
 // whatever this returns is the truth about a submitted game.
-export function replay(seed, moves) {
-    const engine = new Engine(seed);
+export function replay(seed, moves, rulesetVersion = RULESET_VERSION) {
+    const ruleset = RULESETS[rulesetVersion];
+    if (!ruleset) throw new Error(`unknown ruleset: ${rulesetVersion}`);
+
+    const engine = new Engine(seed, { cap: ruleset.cap });
 
     for (const char of moves) {
         const dir = MOVE_CODES[char];
