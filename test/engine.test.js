@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import Engine, { slide, replay, SIZE, CAP } from '../public/source/engine.js';
+import Engine, { slide, replay, SIZE, CAP, RULESETS, RULESET_VERSION } from '../public/source/engine.js';
 
 // Builds an engine with a known grid and no tile spawning, so a move's
 // effect on the board can be asserted exactly.
@@ -46,6 +46,40 @@ describe('slide', () => {
     it('reports no movement for an already-packed line', () => {
         expect(slide([2, 4, 2, 4]).moved).toBe(false);
         expect(slide([0, 0, 0, 0]).moved).toBe(false);
+    });
+});
+
+describe('older rulesets', () => {
+    // A game begun before a rules change is finished after it. The server has
+    // to score it by the rules the player was actually playing, or an honest
+    // run gets rejected — or worse, silently rescored.
+    it('replays a run under the ruleset it was played under', () => {
+        const seed = 20260904;
+        const moves = 'LDRULDRULDRULDRU';
+
+        const asPlayed = replay(seed, moves, 1);
+        const asToday = replay(seed, moves, 2);
+
+        expect(asPlayed.cap).toBe(2048);
+        expect(asToday.cap).toBe(4096);
+    });
+
+    it('scores a capped pair by the old cap, not the new one', () => {
+        // Under ruleset 1 a pair of 2048 vanished; under 2 it promotes. Both
+        // pay 4096, but the board left behind differs, and everything after
+        // it diverges.
+        expect(slide([2048, 2048, 0, 0], RULESETS[1].cap).line).toEqual([0, 0, 0, 0]);
+        expect(slide([2048, 2048, 0, 0], RULESETS[2].cap).line).toEqual([4096, 0, 0, 0]);
+        expect(slide([1024, 1024, 0, 0], RULESETS[1].cap).line).toEqual([2048, 0, 0, 0]);
+    });
+
+    it('defaults to the current ruleset', () => {
+        expect(new Engine(1).cap).toBe(RULESETS[RULESET_VERSION].cap);
+        expect(replay(1, 'L').cap).toBe(CAP);
+    });
+
+    it('refuses a ruleset it has no rules for', () => {
+        expect(() => replay(1, 'L', 99)).toThrow(/unknown ruleset/);
     });
 });
 

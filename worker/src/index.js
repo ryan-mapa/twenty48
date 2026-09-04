@@ -1,4 +1,4 @@
-import { replay, RULESET_VERSION } from '../../public/source/engine.js';
+import { replay, RULESETS, RULESET_VERSION } from '../../public/source/engine.js';
 import { signJwt, verifyJwt, hashIp } from './auth.js';
 
 // This Worker serves both the game (static assets from ../public) and the
@@ -134,8 +134,11 @@ async function submitSession(request, env, sessionId) {
     if (!session) return fail('unknown session', 404);
     if (session.submitted_at) return fail('session already submitted', 409);
     if (Date.now() - session.created_at > SESSION_TTL_MS) return fail('session expired', 410);
-    if (session.ruleset_version !== RULESET_VERSION) {
-        return fail('session was created under an older ruleset', 409);
+    // A game that began before a rules change is still a real game. Rather
+    // than turning that player away, replay it under the ruleset it was
+    // actually played under — the point of recording one per session.
+    if (!RULESETS[session.ruleset_version]) {
+        return fail('this game was played under rules that no longer exist', 409);
     }
 
     // Timings must be non-decreasing, and the run cannot be faster than the
@@ -152,7 +155,7 @@ async function submitSession(request, env, sessionId) {
 
     let engine;
     try {
-        engine = replay(session.seed, moves);
+        engine = replay(session.seed, moves, session.ruleset_version);
     } catch {
         return fail('move log could not be replayed', 422);
     }
@@ -179,7 +182,7 @@ async function submitSession(request, env, sessionId) {
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
             sessionId, user ? user.sub : null, displayName, user ? 1 : 0,
-            score, maxTile, moves.length, durationMs, RULESET_VERSION, now
+            score, maxTile, moves.length, durationMs, session.ruleset_version, now
         )
     ]);
 
