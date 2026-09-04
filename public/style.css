@@ -27,6 +27,14 @@
     box-sizing: border-box;
 }
 
+/* The UA stylesheet hides [hidden] with a plain `display: none`, which any
+   author `display` beats — so an element styled `display: flex` stayed on
+   screen with the attribute set. Every hidden toggle in the app relies on
+   this working, so it is enforced once here. */
+[hidden] {
+    display: none !important;
+}
+
 html {
     background-color: var(--bg);
 }
@@ -482,11 +490,6 @@ h1 {
     padding: 20px;
     background-color: rgba(225, 239, 199, 0.9);
     backdrop-filter: blur(3px);
-}
-
-/* .overlay sets display, so the hidden attribute needs to win explicitly */
-.overlay[hidden] {
-    display: none;
 }
 
 .overlay-card {
