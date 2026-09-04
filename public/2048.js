@@ -2,6 +2,7 @@ import Game from './source/game.js';
 import Leaderboard from './source/leaderboard.js';
 import Overlay from './source/overlay.js';
 import createGoogleButton, { createGoogleMark } from './source/google-button.js';
+import { gameUrl, challengeUrl, readChallenge, shareOrCopy } from './source/share.js';
 import {
     createSession, submitRun, fetchMe, signIn, signOut,
     savePending, loadPending, clearPending,
@@ -28,20 +29,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     // control, which renders before that, can safely test it.
     let game = null;
 
+    // A score somebody linked us here to beat, and our own most recent posted
+    // run — the thing a challenge link is built from.
+    const challenge = readChallenge(location.search);
+    let lastPosted = null;
+
     // The overlay's sign-in control is the same branded button as the header.
     const overlaySignIn = createGoogleButton(null);
     document.getElementById('overlay-signin').appendChild(overlaySignIn);
 
     const overlay = new Overlay({
         root: document.getElementById('gameover'),
+        title: document.querySelector('#gameover h2'),
         score: document.getElementById('final-score'),
+        share: document.getElementById('share-score'),
         status: document.getElementById('overlay-status'),
         post: document.getElementById('post-score'),
         playAgain: document.getElementById('play-again'),
         nameField: document.getElementById('name-field'),
         nameInput: document.getElementById('player-name'),
         signInLink: overlaySignIn
-    }, { onPost: postScore, onPlayAgain: playAgain, onSignIn: startSignIn });
+    }, {
+        onPost: postScore,
+        onPlayAgain: playAgain,
+        onSignIn: startSignIn,
+        onShare: shareScore
+    });
 
     // Shown from page load rather than only at game over, so signing in is
     // discoverable before a score is on the line.
@@ -91,6 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (sessionId) savePending(sessionId, run);
 
         overlay.show(run.score);
+        overlay.setTitle(beatsChallenge(run.score) ? 'CHALLENGE BEATEN' : 'GAME OVER');
         overlay.setIdentity({ signedIn: me.signedIn, rememberedName: rememberedName() });
 
         if (!sessionId) {
@@ -143,7 +157,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             clearPending();
             if (name) rememberName(name);
 
+            lastPosted = result;
             overlay.setPost('', false);
+            overlay.setShare(true);
             overlay.setStatus(`Posted as ${result.displayName} — rank #${result.rank}.`);
             await leaderboard.refresh(result.displayName);
         } catch (error) {
@@ -185,6 +201,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const howto = document.getElementById('howto');
     const helpButton = document.getElementById('help');
     const howtoClose = document.getElementById('howto-close');
+    const challengeDialog = document.getElementById('challenge');
 
     function setHowto(open) {
         howto.hidden = !open;
@@ -197,14 +214,67 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (event.target === howto) setHowto(false); // the backdrop, not the card
     });
 
+    document.getElementById('challenge-start').addEventListener('click', () => {
+        challengeDialog.hidden = true;
+    });
+
     // Capture phase on purpose. The board's own keydown listener is also on
     // document, so stopping here is what keeps the arrows from moving tiles
-    // behind the open dialog.
+    // behind an open dialog.
     document.addEventListener('keydown', event => {
-        if (howto.hidden) return;
-        if (event.key === 'Escape') setHowto(false);
+        const open = [howto, challengeDialog].filter(dialog => !dialog.hidden);
+        if (!open.length) return;
+        if (event.key === 'Escape') open.forEach(dialog => {
+            if (dialog === howto) setHowto(false);
+            else dialog.hidden = true;
+        });
         event.stopPropagation();
     }, true);
+
+    // Sharing ---------------------------------------------------------------
+
+    const toastEl = document.getElementById('toast');
+    let toastTimer = null;
+
+    function toast(message) {
+        toastEl.textContent = message;
+        toastEl.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { toastEl.hidden = true; }, 2200);
+    }
+
+    // A native share sheet is its own confirmation, and a cancelled share is
+    // not worth remarking on. Only a copy needs telling.
+    function reportShare(result) {
+        if (result === 'copied') toast('Link copied');
+        else if (result === 'failed') toast('Could not share');
+    }
+
+    document.getElementById('share').addEventListener('click', async () => {
+        reportShare(await shareOrCopy({
+            text: 'SUSHI48 — 2048, but sushi.',
+            url: gameUrl()
+        }));
+    });
+
+    async function shareScore() {
+        if (!lastPosted) return;
+        reportShare(await shareOrCopy({
+            text: `I scored ${lastPosted.score.toLocaleString()} on SUSHI48. Beat that.`,
+            url: challengeUrl(lastPosted.score, lastPosted.displayName, gameUrl())
+        }));
+    }
+
+    function beatsChallenge(score) {
+        return Boolean(challenge) && score > challenge.score;
+    }
+
+    if (challenge) {
+        document.getElementById('challenge-score').textContent =
+            challenge.score.toLocaleString();
+        document.getElementById('challenge-from').textContent =
+            challenge.by ? `${challenge.by} set the bar.` : 'Someone set the bar.';
+    }
 
     me = await fetchMe();
     renderAuth();
@@ -214,18 +284,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ?auth=ok means we just came back from GitHub, so there is very likely a
     // buffered run waiting to go out.
     const authResult = new URLSearchParams(location.search).get('auth');
-    if (authResult) history.replaceState(null, '', location.pathname);
+    if (authResult || challenge) history.replaceState(null, '', location.pathname);
 
     const posted = await flushPending();
     await leaderboard.refresh(posted ? posted.displayName : me.name);
 
     if (posted) {
+        lastPosted = posted;
         overlay.show(posted.score);
         overlay.setIdentity({ signedIn: true });
         overlay.setPost('', false);
+        overlay.setShare(true);
         overlay.setStatus(`Posted as ${posted.displayName} — rank #${posted.rank}.`);
     } else if (authResult === 'failed') {
         overlay.setStatus('');
         leaderboard.statusEl.textContent = 'Sign-in failed. Try again.';
+    }
+
+    if (challenge && !posted) {
+        challengeDialog.hidden = false;
+        document.getElementById('challenge-start').focus();
     }
 });

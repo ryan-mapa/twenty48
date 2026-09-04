@@ -43,4 +43,7 @@ CREATE TABLE IF NOT EXISTS scores (
 );
 
 CREATE INDEX IF NOT EXISTS idx_scores_rank ON scores (ruleset_version, score DESC);
+-- The board lists every ruleset together, so its ORDER BY cannot use the
+-- index above: ruleset_version is that one's leading column.
+CREATE INDEX IF NOT EXISTS idx_scores_board ON scores (score DESC);
 CREATE INDEX IF NOT EXISTS idx_scores_user ON scores (user_id, score DESC);

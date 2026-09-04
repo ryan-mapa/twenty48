@@ -183,10 +183,11 @@ async function submitSession(request, env, sessionId) {
         )
     ]);
 
-    // Rank is simply how many runs beat this one.
+    // Rank is simply how many runs beat this one — across every ruleset, so
+    // that it agrees with the position the board actually shows.
     const { rank } = await env.DB.prepare(
-        'SELECT COUNT(*) + 1 AS rank FROM scores WHERE ruleset_version = ? AND score > ?'
-    ).bind(RULESET_VERSION, score).first();
+        'SELECT COUNT(*) + 1 AS rank FROM scores WHERE score > ?'
+    ).bind(score).first();
 
     return json({ score, maxTile, rank, displayName, verified: Boolean(user) });
 }
@@ -197,15 +198,20 @@ async function listScores(request, env) {
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '100', 10) || 100, 100);
 
     // Every run stands on its own: no collapsing to a personal best, so a
-    // player's earlier scores stay on the board. Matches idx_scores_rank
-    // exactly, so this is an index scan rather than a sort of the table.
+    // player's earlier scores stay on the board.
+    //
+    // Deliberately not filtered by ruleset_version. Ruleset 2 added a rung to
+    // the sushi chain and moved the cap from 2048 to 4096, but a merging pair
+    // pays twice the tile value under both, so the two are comparable — and
+    // v2 can reach further, so nothing earlier is flattered by sharing a
+    // board with it. The column still records what each run was played under,
+    // so the versions can be separated later if they ever do diverge.
     const { results } = await env.DB.prepare(
         `SELECT display_name, score, max_tile, verified, created_at
          FROM scores
-         WHERE ruleset_version = ?
          ORDER BY score DESC
          LIMIT ?`
-    ).bind(RULESET_VERSION, limit).all();
+    ).bind(limit).all();
 
     return json({ scores: results }, 200, { 'Cache-Control': 'public, max-age=10' });
 }

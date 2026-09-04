@@ -1,6 +1,6 @@
 import { SIZE } from './engine.js';
 
-// Sushi art tops out at nigiri-uni (2048), and the engine caps tiles there —
+// Sushi art tops out at nigiri-uni (4096), and the engine caps tiles there —
 // a matching pair at the cap vanishes rather than promoting. The tile-high
 // fallback below is therefore unreachable in normal play; it exists so that
 // raising the cap can never silently render blank plates.
@@ -15,10 +15,11 @@ const TILE_CLASSES = {
     256: 'two-fifty-six',
     512: 'five-twelve',
     1024: 'ten-twenty-four',
-    2048: 'twenty-forty-eight'
+    2048: 'twenty-forty-eight',
+    4096: 'forty-ninety-six'
 };
 
-const TOP_CLASS = TILE_CLASSES[2048];
+const TOP_CLASS = TILE_CLASSES[4096];
 
 // Owns every DOM node for the board. Takes an Engine snapshot and makes the
 // screen match it; holds no game state of its own.

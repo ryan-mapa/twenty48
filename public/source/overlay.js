@@ -4,9 +4,11 @@
 // Two posting modes: signed in (the account owns the name) or anonymous (the
 // player types one). Signing in is never required.
 export default class Overlay {
-    constructor(elements, { onPost, onPlayAgain, onSignIn }) {
+    constructor(elements, { onPost, onPlayAgain, onSignIn, onShare }) {
         this.root = elements.root;
+        this.titleEl = elements.title;
         this.scoreEl = elements.score;
+        this.shareButton = elements.share;
         this.statusEl = elements.status;
         this.postButton = elements.post;
         this.nameField = elements.nameField;
@@ -14,6 +16,7 @@ export default class Overlay {
         this.signInLink = elements.signInLink;
 
         this.postButton.addEventListener('click', onPost);
+        this.shareButton.addEventListener('click', onShare);
         elements.playAgain.addEventListener('click', onPlayAgain);
 
         this.signInLink.addEventListener('click', event => {
@@ -30,7 +33,17 @@ export default class Overlay {
 
     show(score) {
         this.scoreEl.textContent = score.toLocaleString();
+        // There is nothing to challenge anyone with until the score is posted.
+        this.shareButton.hidden = true;
         this.root.hidden = false;
+    }
+
+    setTitle(text) {
+        this.titleEl.textContent = text;
+    }
+
+    setShare(visible) {
+        this.shareButton.hidden = !visible;
     }
 
     hide() {

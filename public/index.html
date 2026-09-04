@@ -21,8 +21,21 @@
             <span>SUSHI<span class="red">48</span></span>
         </h1>
         <div class="header-controls">
-            <button type="button" id="help" class="help-button"
-                    aria-label="How to play" aria-haspopup="dialog">?</button>
+            <div class="icon-buttons">
+                <button type="button" id="help" class="icon-button"
+                        aria-label="How to play" aria-haspopup="dialog">?</button>
+                <button type="button" id="share" class="icon-button" aria-label="Share this game">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <circle cx="18" cy="5" r="3"/>
+                        <circle cx="6" cy="12" r="3"/>
+                        <circle cx="18" cy="19" r="3"/>
+                        <line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/>
+                        <line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/>
+                    </svg>
+                </button>
+            </div>
             <div id="auth" class="auth"></div>
         </div>
     </div>
@@ -58,6 +71,18 @@
         <a href="https://github.com/ryan-mapa/twenty48" target="_blank" rel="noopener">Source on GitHub</a>
     </p>
 
+    <div id="challenge" class="overlay" hidden>
+        <div class="overlay-card" role="dialog" aria-modal="true"
+             aria-labelledby="challenge-title">
+            <h2 id="challenge-title">YOU'VE BEEN CHALLENGED</h2>
+            <p class="final-score">BEAT <span id="challenge-score">0</span></p>
+            <p id="challenge-from" class="overlay-status"></p>
+            <div class="overlay-actions">
+                <button type="button" id="challenge-start" class="button">LET'S GO</button>
+            </div>
+        </div>
+    </div>
+
     <div id="howto" class="overlay" hidden>
         <div class="overlay-card howto-card" role="dialog" aria-modal="true"
              aria-labelledby="howto-title">
@@ -65,7 +90,7 @@
             <ul class="howto-list">
                 <li>Arrow keys, or swipe on a phone. Every move slides all the sushi as far as it will go.</li>
                 <li>Two of the same sushi merge into the next one up &mdash; that's your score.</li>
-                <li>Two uni cancel each other out for 4096 points, clearing space. There's no end!</li>
+                <li>Two uni cancel each other out for 8192 points, clearing space. There's no end!</li>
                 <li>When you have no more moves, the game ends. Post your score under any name &mdash; sign in with Google to keep that name yours.</li>
             </ul>
             <div class="overlay-actions">
@@ -89,6 +114,7 @@
 
             <div class="overlay-actions">
                 <button type="button" id="post-score" class="button">POST TO LEADERBOARD</button>
+                <button type="button" id="share-score" class="button" hidden>CHALLENGE A FRIEND</button>
                 <button type="button" id="play-again" class="button">PLAY AGAIN</button>
             </div>
 
@@ -96,5 +122,6 @@
             <div class="overlay-signin" id="overlay-signin"></div>
         </div>
     </div>
+    <p id="toast" class="toast" role="status" aria-live="polite" hidden></p>
 </body>
 </html>

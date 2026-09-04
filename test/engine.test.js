@@ -58,8 +58,22 @@ describe('the cap', () => {
     });
 
     it('still promotes a pair just below the cap', () => {
-        expect(slide([1024, 1024, 0, 0]).line).toEqual([CAP, 0, 0, 0]);
-        expect(slide([1024, 1024, 0, 0]).points).toBe(CAP);
+        const below = CAP / 2;
+        expect(slide([below, below, 0, 0]).line).toEqual([CAP, 0, 0, 0]);
+        expect(slide([below, below, 0, 0]).points).toBe(CAP);
+    });
+
+    // The rungs the double-toro tile added. Under ruleset 1 a pair of 2048
+    // vanished; now it promotes, and the vanish happens one rung higher.
+    it('promotes the full sushi chain up to the cap', () => {
+        expect(slide([1024, 1024, 0, 0]).line).toEqual([2048, 0, 0, 0]);
+        expect(slide([2048, 2048, 0, 0]).line).toEqual([4096, 0, 0, 0]);
+        expect(slide([2048, 2048, 0, 0]).points).toBe(4096);
+    });
+
+    it('pays 8192 for a vanishing pair of uni', () => {
+        expect(slide([4096, 4096, 0, 0]).line).toEqual([0, 0, 0, 0]);
+        expect(slide([4096, 4096, 0, 0]).points).toBe(8192);
     });
 
     it('lets surviving tiles compact into the freed space', () => {

@@ -7,14 +7,17 @@ import mulberry32 from './rng.js';
 // move log and derive the real score. Anything non-deterministic added here
 // breaks verification, so keep it pure.
 
-export const RULESET_VERSION = 1;
+export const RULESET_VERSION = 2;
 export const SIZE = 4;
 
-// The sushi art stops at nigiri-uni, so 2048 is the highest tile that can
+// The sushi art stops at nigiri-uni, so 4096 is the highest tile that can
 // exist. A matching pair at the cap is eaten instead of promoted: both cells
 // clear and the merge still pays 2x the tile value. Freeing two cells at the
 // top end is what makes endless play possible.
-export const CAP = 2048;
+//
+// This was 2048 under ruleset 1, when uni was the top tile. Adding the pair
+// of toro at 2048 pushed uni up a rung, so the cap moved with it.
+export const CAP = 4096;
 export const DIRECTIONS = ['up', 'down', 'left', 'right'];
 
 export const MOVE_CHARS = { up: 'U', down: 'D', left: 'L', right: 'R' };

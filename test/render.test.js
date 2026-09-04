@@ -39,7 +39,7 @@ describe('renderer', () => {
             grid: [
                 [2, 4, 8, 16],
                 [32, 64, 128, 256],
-                [512, 1024, 2048, 0],
+                [512, 1024, 2048, 4096],
                 [0, 0, 0, 0]
             ],
             score: 1234
@@ -48,7 +48,8 @@ describe('renderer', () => {
         const tiles = [...root.querySelectorAll('.tile')];
         expect(tiles[0].className).toBe('tile two');
         expect(tiles[10].className).toBe('tile twenty-forty-eight');
-        expect(tiles.filter(t => !t.hidden)).toHaveLength(11);
+        expect(tiles[11].className).toBe('tile forty-ninety-six');
+        expect(tiles.filter(t => !t.hidden)).toHaveLength(12);
         expect(score.textContent).toBe('1234');
     });
 
@@ -56,12 +57,12 @@ describe('renderer', () => {
         const { root, score } = mount();
         const renderer = new Renderer(root, score);
 
-        renderer.render({ grid: [[4096, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], score: 0 });
+        renderer.render({ grid: [[8192, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], score: 0 });
 
         const tile = root.querySelector('.tile');
         expect(tile.hidden).toBe(false);
         expect(tile.classList.contains('tile-high')).toBe(true);
-        expect(tile.textContent).toBe('4096');
+        expect(tile.textContent).toBe('8192');
     });
 
     it('clears a tile when its cell empties', () => {
@@ -100,7 +101,7 @@ describe('game', () => {
 
         expect(run.moves).toBe('L');
         expect(run.seed).toBe(1);
-        expect(run.rulesetVersion).toBe(1);
+        expect(run.rulesetVersion).toBe(2);
         expect(run.timings).toHaveLength(1);
     });
 
