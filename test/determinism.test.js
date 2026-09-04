@@ -93,6 +93,9 @@ describe('engine purity', () => {
     });
 
     it('pins a ruleset version for stored replays', () => {
-        expect(RULESET_VERSION).toBe(1);
+        // Bumped to 2 when the double-toro tile moved the cap from 2048 to
+        // 4096. Any change to merge rules or RNG order must bump this, or the
+        // Worker will replay old logs under rules they were not played under.
+        expect(RULESET_VERSION).toBe(2);
     });
 });
